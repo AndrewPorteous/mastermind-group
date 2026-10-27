@@ -1,0 +1,861 @@
+<title>Mastermind Group</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Layout: two views (Announcements / Calendar) under one sticky brand bar; gold-on-night, matching the logo. */
+  :root {
+    --night: #040b2e;
+    --deep: #0a1a5c;
+    --royal: #1a3fc4;
+    --glow: #4d7bff;
+    --gold: #e9c15a;
+    --gold-hi: #fff1c2;
+    --gold-lo: #b0801e;
+    --ink: #edf1ff;
+    --ink-2: #b4c1ea;
+    --ink-3: #8090c4;
+    --line: rgba(233, 193, 90, 0.22);
+    --line-soft: rgba(143, 176, 255, 0.18);
+    --panel: rgba(12, 30, 100, 0.55);
+    --panel-solid: #0b1b5e;
+    --field: rgba(4, 11, 46, 0.7);
+    --live: #5fe0a0;
+    --danger: #ff9b9b;
+    --on-gold: #2a1a00;
+    --gold-grad: linear-gradient(135deg, var(--gold-hi) 0%, #f6d77c 28%, #d4a237 58%, #f6d77c 82%, var(--gold-lo) 100%);
+    --display: "Cinzel", "Trajan Pro", Georgia, serif;
+    --body: "Figtree", "Segoe UI", system-ui, sans-serif;
+    --r: 16px;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink);
+    background:
+      radial-gradient(ellipse 60% 45% at 12% 8%, rgba(77, 123, 255, 0.32), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 90% 30%, rgba(26, 63, 196, 0.4), transparent 70%),
+      radial-gradient(ellipse 70% 50% at 50% 100%, rgba(26, 63, 196, 0.35), transparent 70%),
+      var(--night);
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px);
+    z-index: 30; background: var(--night);
+  }
+  #stars { position: fixed; inset: 0; z-index: -1; pointer-events: none; width: 100%; height: 100%; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; background: none; border: 0; padding: 0; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 8px; }
+
+  .gutter {
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap { max-width: 1160px; margin-inline: auto; }
+  .gold-text { background: var(--gold-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: 0.03em; line-height: 1.15; margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+  .eyebrow { font-family: var(--display); font-size: 0.74rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); }
+
+  /* ---------- Top bar ---------- */
+  .bar {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: rgba(4, 11, 46, 0.82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+  }
+  .bar-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 70px; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand svg { width: 36px; height: 36px; flex: none; filter: drop-shadow(0 0 10px rgba(233, 193, 90, 0.45)); }
+  .brand-name { font-family: var(--display); font-weight: 700; font-size: 1.08rem; letter-spacing: 0.1em; line-height: 1; }
+  .brand-name small { display: block; font-size: 0.56rem; letter-spacing: 0.52em; margin-top: 5px; font-weight: 500; }
+  .tabs { display: flex; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 999px; background: rgba(255, 255, 255, 0.03); }
+  .tab {
+    display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px;
+    font-weight: 600; font-size: 0.9rem; color: var(--ink-2); text-decoration: none; transition: color .2s, background .2s;
+  }
+  .tab svg { width: 16px; height: 16px; }
+  .tab:hover { color: var(--gold-hi); }
+  .tab[aria-current="page"] { background: var(--gold-grad); color: var(--on-gold); }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 24px; border-radius: 999px; font-weight: 600; font-size: 0.93rem; text-decoration: none;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s, background .18s;
+  }
+  .btn-gold { background: var(--gold-grad); color: var(--on-gold); box-shadow: 0 10px 28px -12px rgba(233, 193, 90, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.55); }
+  .btn-gold:hover:not(:disabled) { transform: translateY(-1px); }
+  .btn-ghost { border: 1px solid var(--line); color: var(--gold-hi); background: rgba(255, 255, 255, 0.03); }
+  .btn-ghost:hover { border-color: var(--gold); background: rgba(233, 193, 90, 0.08); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+  .text-btn { font-size: 0.84rem; font-weight: 600; color: var(--gold); }
+  .text-btn:hover { text-decoration: underline; }
+  .text-btn.danger { color: var(--danger); }
+
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
+  /* ---------- Avatars ---------- */
+  .av {
+    --size: 48px;
+    width: var(--size); height: var(--size); flex: none; border-radius: 50%;
+    display: grid; place-items: center; position: relative;
+    font-family: var(--display); font-weight: 700; font-size: calc(var(--size) * 0.36); color: var(--gold-hi);
+    background: radial-gradient(circle at 30% 25%, var(--glow), var(--deep));
+  }
+  .av::before {
+    content: ""; position: absolute; inset: -3px; border-radius: 50%; padding: 2px; background: var(--gold-grad);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+
+  /* ================= HOME ================= */
+  .hero { padding-block: 56px 40px; }
+  .hero-grid { display: grid; grid-template-columns: 220px 1fr; gap: 44px; align-items: center; }
+  .hero-logo { width: 100%; max-width: 220px; aspect-ratio: 1; border-radius: 28px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px -30px rgba(77, 123, 255, 0.9); }
+  .hero-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); margin-top: 12px; }
+  .hero p { color: var(--ink-2); max-width: 62ch; margin-top: 14px; font-size: 1.05rem; }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+
+  .board { padding: 0; overflow: hidden; }
+  .board-head {
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px 24px;
+    padding: 26px 28px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(90deg, rgba(26, 63, 196, 0.35), transparent 70%);
+  }
+  .board-head h2 { font-size: clamp(1.5rem, 3vw, 2rem); margin-top: 6px; }
+  .clock { text-align: right; }
+  .clock strong { display: block; font-family: var(--display); font-size: 1.6rem; color: var(--gold-hi); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+  .clock span { font-size: 0.82rem; color: var(--ink-3); }
+  .board-body { display: grid; grid-template-columns: 1.15fr 0.85fr; }
+  .board-col { padding: 26px 28px; min-width: 0; }
+  .board-col + .board-col { border-left: 1px solid var(--line); }
+  .col-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
+  .col-title h3 { font-size: 1.1rem; color: var(--gold-hi); }
+  .count { font-size: 0.78rem; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+
+  .today-list { display: grid; gap: 14px; }
+  .today-card {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center;
+    padding: 18px; border-radius: 14px; border: 1px solid var(--line-soft); background: rgba(26, 63, 196, 0.16);
+  }
+  .today-card.is-live { border-color: rgba(95, 224, 160, 0.55); background: linear-gradient(120deg, rgba(95, 224, 160, 0.12), rgba(26, 63, 196, 0.18)); }
+  .today-card.is-next { border-color: rgba(233, 193, 90, 0.55); }
+  .today-card.is-done { opacity: .55; }
+  .today-card .av { --size: 56px; }
+  .tc-main { min-width: 0; }
+  .tc-name { font-family: var(--display); font-size: 1.15rem; font-weight: 600; }
+  .tc-time { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 0.92rem; }
+  .tc-topic { color: var(--ink-3); font-size: 0.86rem; margin-top: 2px; overflow-wrap: anywhere; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 999px;
+    font-size: 0.74rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+    border: 1px solid var(--line-soft); color: var(--ink-2);
+  }
+  .pill.live { color: var(--live); border-color: rgba(95, 224, 160, 0.5); }
+  .pill.live::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); animation: blink 1.6s ease-in-out infinite; }
+  .pill.next { color: var(--on-gold); background: var(--gold-grad); border-color: transparent; }
+  @keyframes blink { 50% { opacity: .35; } }
+
+  .up-list { display: grid; gap: 4px; }
+  .up-day { font-size: 0.74rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin-top: 12px; }
+  .up-day:first-child { margin-top: 0; }
+  .up-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(233, 193, 90, 0.1); }
+  .up-row .av { --size: 36px; }
+  .up-name { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .up-name small { display: block; font-weight: 400; color: var(--ink-3); font-size: 0.8rem; }
+  .up-time { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--gold-hi); font-size: 0.92rem; text-align: right; }
+  .up-time small { display: block; font-weight: 400; color: var(--ink-3); font-size: 0.72rem; }
+
+  .empty { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 28px 12px; color: var(--ink-3); }
+  .empty svg { width: 46px; height: 46px; opacity: .8; }
+  .empty strong { color: var(--ink-2); font-weight: 600; }
+
+  .section { padding-block: 56px 0; }
+  .section-head { display: grid; gap: 8px; margin-bottom: 26px; }
+  .section-head h2 { font-size: clamp(1.6rem, 3.4vw, 2.2rem); }
+  .section-head p { color: var(--ink-2); max-width: 64ch; }
+
+  .about { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  .about p + p { margin-top: 14px; }
+  .about-text p { color: var(--ink-2); }
+  .pillars { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .pillar { padding: 20px; }
+  .pillar h3 { font-size: 0.98rem; color: var(--gold-hi); margin-bottom: 6px; }
+  .pillar p { color: var(--ink-2); font-size: 0.9rem; }
+
+  .roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+  .roster-item { padding: 22px 16px; display: grid; justify-items: center; text-align: center; gap: 10px; }
+  .roster-item .av { --size: 68px; }
+  .roster-item h3 { font-size: 1rem; overflow-wrap: anywhere; }
+  .roster-item p { font-size: 0.8rem; color: var(--ink-3); }
+  .roster-item .next-slot { font-size: 0.8rem; color: var(--gold); font-variant-numeric: tabular-nums; }
+
+  footer { margin-top: 72px; border-top: 1px solid var(--line); padding-block: 30px; background: rgba(4, 11, 46, 0.6); }
+  .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; color: var(--ink-3); font-size: 0.85rem; }
+
+  /* ================= CALENDAR ================= */
+  .cal-intro { padding-block: 40px 24px; display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }
+  .cal-intro h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin-top: 8px; }
+  .cal-intro p { color: var(--ink-2); margin-top: 8px; max-width: 60ch; }
+  .tz-badge { display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--line); background: rgba(233, 193, 90, 0.08); font-size: 0.85rem; color: var(--gold-hi); }
+  .tz-badge i { width: 8px; height: 8px; border-radius: 50%; background: var(--live); box-shadow: 0 0 10px var(--live); }
+
+  .notice { padding: 14px 18px; border-radius: 12px; border: 1px solid var(--line); background: rgba(233, 193, 90, 0.07); color: var(--gold-hi); font-size: 0.9rem; margin-bottom: 18px; }
+
+  .planner { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; align-items: start; }
+  .cal { padding: 24px; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; }
+  .cal-head h2 { font-size: 1.3rem; }
+  .cal-nav { display: flex; gap: 8px; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--gold); }
+  .icon-btn:hover { background: rgba(233, 193, 90, 0.1); border-color: var(--gold); }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .grid7 { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .dow { text-align: center; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); padding-bottom: 8px; font-weight: 700; }
+  .day {
+    min-height: 72px; border-radius: 12px; border: 1px solid var(--line-soft); background: rgba(26, 63, 196, 0.12);
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 7px; text-align: left; min-width: 0;
+    transition: border-color .15s, background .15s;
+  }
+  .day:hover { border-color: var(--gold); }
+  .day.blank { visibility: hidden; }
+  .day.past { opacity: .45; }
+  .day.today { box-shadow: inset 0 0 0 1px var(--gold); }
+  .day[aria-pressed="true"] { background: rgba(233, 193, 90, 0.18); border-color: var(--gold); }
+  .day-num { font-weight: 700; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+  .day[aria-pressed="true"] .day-num { color: var(--gold-hi); }
+  .day-dots { display: flex; flex-wrap: wrap; gap: 3px; }
+  .dot { font-size: 0.58rem; font-weight: 700; font-family: var(--display); line-height: 1; padding: 3px 4px; border-radius: 5px; background: var(--gold-grad); color: var(--on-gold); }
+  .dot.more { background: rgba(255, 255, 255, 0.12); color: var(--ink-2); }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px; font-size: 0.78rem; color: var(--ink-3); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+
+  .side { display: grid; gap: 20px; min-width: 0; }
+  .day-panel, .mods-panel { padding: 24px; min-width: 0; }
+  .day-panel h2, .mods-panel h2 { font-size: 1.18rem; }
+  .day-panel .sub { color: var(--ink-3); font-size: 0.85rem; margin-top: 4px; }
+  .sched-list { display: grid; gap: 8px; margin-top: 16px; }
+  .sched-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; background: rgba(26, 63, 196, 0.16); border: 1px solid var(--line-soft); }
+  .sched-row .av { --size: 34px; }
+  .sched-row .meta { min-width: 0; }
+  .sched-row .meta strong { display: block; font-size: 0.95rem; }
+  .sched-row .meta span { font-size: 0.8rem; color: var(--ink-3); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+  .row-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+  .muted-line { color: var(--ink-3); font-size: 0.88rem; margin-top: 14px; }
+
+  form { margin: 0; }
+  .form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .form h3 { grid-column: 1 / -1; font-size: 0.98rem; color: var(--gold-hi); }
+  .field { display: grid; gap: 5px; min-width: 0; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: 0.78rem; font-weight: 600; color: var(--ink-2); }
+  .field input, .field select {
+    width: 100%; background: var(--field); border: 1px solid var(--line-soft); border-radius: 10px; padding: 10px 12px;
+  }
+  .field select option { background: var(--panel-solid); }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(233, 193, 90, 0.18); }
+  .form-foot { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+  .msg { font-size: 0.84rem; min-height: 1.3em; }
+  .msg.err { color: var(--danger); }
+  .msg.ok { color: var(--live); }
+
+  .mod-list { display: grid; gap: 8px; margin-top: 16px; }
+  .mod-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(233, 193, 90, 0.1); }
+  .mod-row .av { --size: 36px; }
+  .mod-row .meta { min-width: 0; }
+  .mod-row .meta strong { display: block; font-size: 0.95rem; overflow-wrap: anywhere; }
+  .mod-row .meta span { font-size: 0.78rem; color: var(--ink-3); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 160%); z-index: 40;
+    padding: 12px 20px; border-radius: 12px; background: var(--panel-solid); border: 1px solid var(--gold); color: var(--gold-hi);
+    font-size: 0.9rem; transition: transform .3s ease; max-width: calc(100% - 32px); box-shadow: 0 20px 50px -20px #000;
+  }
+  .toast.show { transform: translate(-50%, 0); }
+
+  @media (max-width: 960px) {
+    .board-body, .planner, .about { grid-template-columns: 1fr; }
+    .board-col + .board-col { border-left: 0; border-top: 1px solid var(--line); }
+  }
+  @media (max-width: 640px) {
+    .hero-grid { grid-template-columns: 1fr; gap: 24px; }
+    .hero-logo { max-width: 160px; }
+    .bar-inner { flex-wrap: wrap; padding-block: 10px; }
+    .brand-name { font-size: 0.95rem; }
+    .tab { padding: 7px 14px; }
+    .board-head, .board-col, .cal, .day-panel, .mods-panel { padding-inline: 16px; }
+    .pillars, .form { grid-template-columns: 1fr; }
+    .today-card { grid-template-columns: auto 1fr; }
+    .today-card .pill { grid-column: 2; justify-self: start; }
+    .day { min-height: 54px; padding: 5px; }
+    .day-dots .dot:nth-child(n+2) { display: none; }
+    .clock { text-align: left; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff1c2"/><stop offset=".35" stop-color="#f6d77c"/>
+      <stop offset=".65" stop-color="#d4a237"/><stop offset="1" stop-color="#f6d77c"/>
+    </linearGradient>
+    <radialGradient id="g-core"><stop offset="0" stop-color="#fffbe6"/><stop offset=".4" stop-color="#f6d77c" stop-opacity=".7"/><stop offset="1" stop-color="#f6d77c" stop-opacity="0"/></radialGradient>
+    <symbol id="emblem" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="80" fill="none" stroke="url(#g-gold)" stroke-width="5"/>
+      <polygon points="30.7,60 169.3,60 100,180" fill="none" stroke="url(#g-gold)" stroke-width="1.6" opacity=".8"/>
+      <line x1="100" y1="20" x2="100" y2="180" stroke="url(#g-gold)" stroke-width="1.2" opacity=".6"/>
+      <polygon points="100,20 169.3,140 30.7,140" fill="none" stroke="url(#g-gold)" stroke-width="9" stroke-linejoin="round"/>
+      <circle cx="100" cy="100" r="22" fill="url(#g-core)"/>
+      <g fill="url(#g-gold)">
+        <circle cx="100" cy="20" r="10"/><circle cx="169.3" cy="60" r="10"/><circle cx="169.3" cy="140" r="10"/>
+        <circle cx="100" cy="180" r="10"/><circle cx="30.7" cy="140" r="10"/><circle cx="30.7" cy="60" r="10"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="bar gutter">
+  <div class="wrap bar-inner">
+    <a class="brand" href="#home" data-view="home" aria-label="Mastermind Group announcements">
+      <svg><use href="#emblem"/></svg>
+      <span class="brand-name gold-text">MASTERMIND<small>GROUP</small></span>
+    </a>
+    <nav class="tabs" aria-label="Pages">
+      <a class="tab" href="#home" data-view="home">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l15-6v14L3 13z"/><path d="M7 13v5a2 2 0 0 0 4 0v-4"/></svg>Announcements
+      </a>
+      <a class="tab" href="#calendar" data-view="calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Calendar
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ======================= PAGE 1: ANNOUNCEMENTS ======================= -->
+<main id="view-home" class="gutter">
+  <div class="wrap">
+    <section class="hero hero-grid">
+      <div class="hero-logo"><img src="assets/logo.jpg" alt="Mastermind Group logo: a golden triangle inside a circle of six gold nodes on a cosmic blue sky"></div>
+      <div>
+        <span class="eyebrow">Collective growth community</span>
+        <h1>Grow faster, <span class="gold-text">together.</span></h1>
+        <p>Growth-minded entrepreneurs, professionals and leaders sharing insights, experiences, challenges and opportunities. Here is who is guiding the circle today and in the sessions ahead.</p>
+        <div class="hero-actions">
+          <a class="btn btn-gold" href="#calendar" data-view="calendar">Open the calendar</a>
+          <a class="btn btn-ghost" href="#about">What is a Mastermind?</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel board" aria-labelledby="board-title">
+      <div class="board-head">
+        <div>
+          <span class="eyebrow">Announcement</span>
+          <h2 id="board-title">Today in the circle · <span class="gold-text" id="todayLabel"></span></h2>
+        </div>
+        <div class="clock" aria-live="off">
+          <strong id="clockTime">--:--</strong>
+          <span id="clockZone">Central European Time</span>
+        </div>
+      </div>
+      <div class="board-body">
+        <div class="board-col">
+          <div class="col-title"><h3>Today's moderators</h3><span class="count" id="todayCount"></span></div>
+          <div class="today-list" id="todayList"></div>
+        </div>
+        <div class="board-col">
+          <div class="col-title"><h3>Upcoming moderators</h3><span class="count" id="upCount"></span></div>
+          <div class="up-list" id="upList"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="about">
+        <div class="about-text">
+          <div class="section-head">
+            <span class="eyebrow">What is a Mastermind</span>
+            <h2>Where ambitious minds <span class="gold-text">align</span></h2>
+          </div>
+          <p>A Mastermind Group is a collaborative community of growth-minded entrepreneurs, professionals, and leaders who come together to share insights, experiences, challenges, and opportunities.</p>
+          <p>Through structured discussions, accountability, and collective problem-solving, members leverage the group's diverse knowledge and expertise to accelerate personal and professional growth.</p>
+        </div>
+        <div class="pillars">
+          <div class="panel pillar"><h3>Shared insights</h3><p>Real experiences and lessons learned, offered to the whole circle.</p></div>
+          <div class="panel pillar"><h3>Structured discussion</h3><p>Moderated sessions with a clear format keep every voice heard.</p></div>
+          <div class="panel pillar"><h3>Accountability</h3><p>Commit to goals and report back to peers who care about your progress.</p></div>
+          <div class="panel pillar"><h3>Collective problem-solving</h3><p>Bring a challenge to the hot seat and leave with options from many angles.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="roster-title">
+      <div class="section-head">
+        <span class="eyebrow">Our moderators</span>
+        <h2 id="roster-title">The people who guide the <span class="gold-text">circle</span></h2>
+      </div>
+      <div class="roster" id="roster"></div>
+    </section>
+  </div>
+</main>
+
+<!-- ======================= PAGE 2: CALENDAR ======================= -->
+<main id="view-calendar" class="gutter" hidden>
+  <div class="wrap">
+    <section class="cal-intro">
+      <div>
+        <span class="eyebrow">Moderator calendar</span>
+        <h1>Schedule a <span class="gold-text">moderator</span></h1>
+        <p>Pick a date, choose a moderator and a time. The session appears on the Announcements page straight away.</p>
+      </div>
+      <span class="tz-badge"><i></i><span>All times in <strong id="tzNow">CET</strong> · Europe/Berlin</span></span>
+    </section>
+
+    <div class="notice" id="accessNotice" hidden></div>
+
+    <div class="planner">
+      <section class="panel cal" aria-labelledby="calTitle">
+        <div class="cal-head">
+          <h2 id="calTitle">Month</h2>
+          <div class="cal-nav">
+            <button class="icon-btn" id="prevMonth" aria-label="Previous month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="icon-btn" id="todayBtn" aria-label="Go to today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/></svg></button>
+            <button class="icon-btn" id="nextMonth" aria-label="Next month"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+          </div>
+        </div>
+        <div class="grid7" id="calGrid"></div>
+        <div class="legend">
+          <span><span class="dot">Gr</span> Moderator scheduled</span>
+          <span><span style="width:12px;height:12px;border-radius:4px;box-shadow:inset 0 0 0 1px var(--gold);display:inline-block"></span> Today</span>
+        </div>
+      </section>
+
+      <div class="side">
+        <section class="panel day-panel" aria-labelledby="dayTitle">
+          <h2 id="dayTitle">Select a date</h2>
+          <p class="sub" id="daySub"></p>
+          <div class="sched-list" id="schedList"></div>
+
+          <form class="form" id="schedForm" novalidate>
+            <h3>Schedule &amp; announce</h3>
+            <div class="field full">
+              <label for="sMod">Moderator</label>
+              <select id="sMod" required></select>
+            </div>
+            <div class="field">
+              <label for="sTime">Start time (CET)</label>
+              <input id="sTime" type="time" step="900" value="18:00" required>
+            </div>
+            <div class="field">
+              <label for="sDur">Duration</label>
+              <select id="sDur">
+                <option value="30">30 minutes</option>
+                <option value="45">45 minutes</option>
+                <option value="60" selected>1 hour</option>
+                <option value="90">1.5 hours</option>
+                <option value="120">2 hours</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="sTopic">Topic (optional)</label>
+              <input id="sTopic" maxlength="120" placeholder="e.g. Hot seat: scaling a service business">
+            </div>
+            <div class="form-foot">
+              <span class="msg" id="schedMsg" role="status"></span>
+              <button class="btn btn-gold" type="submit" id="schedBtn">Schedule &amp; announce</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel mods-panel" aria-labelledby="modsTitle">
+          <h2 id="modsTitle">Moderators</h2>
+          <div class="mod-list" id="modList"></div>
+          <form class="form" id="modForm" novalidate>
+            <h3>Add a new moderator</h3>
+            <div class="field">
+              <label for="mName">Name</label>
+              <input id="mName" maxlength="60" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="mRole">Role (optional)</label>
+              <input id="mRole" maxlength="60" placeholder="Moderator">
+            </div>
+            <div class="form-foot">
+              <span class="msg" id="modMsg" role="status"></span>
+              <button class="btn btn-ghost" type="submit" id="modBtn">Add moderator</button>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="gutter">
+  <div class="wrap foot">
+    <a class="brand" href="#home" data-view="home"><svg><use href="#emblem"/></svg><span class="brand-name gold-text">MASTERMIND<small>GROUP</small></span></a>
+    <span>All session times are Central European Time (Europe/Berlin).</span>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ---------------- Time helpers: everything is stored as Europe/Berlin wall time ---------------- */
+const TZ = "Europe/Berlin";
+const pad = n => String(n).padStart(2, "0");
+const partsFmt = new Intl.DateTimeFormat("en-US", { timeZone: TZ, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+function tzParts(d) { const o = {}; for (const p of partsFmt.formatToParts(d)) if (p.type !== "literal") o[p.type] = +p.value; return o; }
+function tzOffsetMin(d) { const p = tzParts(d); return (Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(d.getTime() / 1000) * 1000) / 60000; }
+function cetToDate(dateStr, timeStr) {
+  const [y, m, d] = dateStr.split("-").map(Number), [hh, mm] = timeStr.split(":").map(Number);
+  const guess = Date.UTC(y, m - 1, d, hh, mm);
+  const off = tzOffsetMin(new Date(guess));
+  let ts = guess - off * 60000;
+  const off2 = tzOffsetMin(new Date(ts));
+  if (off2 !== off) ts = guess - off2 * 60000;
+  return new Date(ts);
+}
+const tzAbbr = d => tzOffsetMin(d) === 120 ? "CEST" : "CET";
+const todayCET = () => { const p = tzParts(new Date()); return `${p.year}-${pad(p.month)}-${pad(p.day)}`; };
+const keyOf = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+const addMin = (t, mins) => { const [h, m] = t.split(":").map(Number); const x = (h * 60 + m + mins) % 1440; return `${pad(Math.floor(x / 60))}:${pad(x % 60)}`; };
+const fmtDay = (k, opts) => { const [y, m, d] = k.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", { timeZone: "UTC", ...opts }); };
+const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const sameTZ = new Date().toLocaleString("en-US", { timeZone: userTZ }) === new Date().toLocaleString("en-US", { timeZone: TZ });
+const localTime = d => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
+/* ---------------- Small helpers ---------------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function initials(name) {
+  const w = String(name || "?").trim().split(/\s+/);
+  return w.length > 1 ? (w[0][0] + w[w.length - 1][0]).toUpperCase() : w[0].slice(0, 2).replace(/^./, c => c.toUpperCase());
+}
+const av = (name, size) => `<span class="av"${size ? ` style="--size:${size}px"` : ""} aria-hidden="true">${esc(initials(name))}</span>`;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 3200); }
+const ICON_EMPTY = `<svg viewBox="0 0 24 24" fill="none" stroke="url(#g-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`;
+
+/* ---------------- State ---------------- */
+const state = {
+  db: null, dbState: "loading",   // loading | ready | off
+  canWrite: null,                 // true | false | null (unknown: keep controls, let a refused write decide)
+  mods: [], sessions: [],
+  modsLoaded: false, sessionsLoaded: false,
+  view: "home",
+  calY: 0, calM: 0, sel: todayCET()
+};
+{ const [y, m] = todayCET().split("-").map(Number); state.calY = y; state.calM = m; }
+const modName = s => state.mods.find(m => m.id === s.modId)?.name || s.modName || "Moderator";
+const sortSessions = list => [...list].sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+/* ---------------- Views ---------------- */
+function setView(v) {
+  state.view = v === "calendar" ? "calendar" : "home";
+  $("view-home").hidden = state.view !== "home";
+  $("view-calendar").hidden = state.view !== "calendar";
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-current", t.dataset.view === state.view ? "page" : "false"));
+}
+document.querySelectorAll("[data-view]").forEach(a => a.addEventListener("click", e => {
+  e.preventDefault();
+  setView(a.dataset.view);
+  try { history.replaceState(null, "", "#" + a.dataset.view); } catch {}
+  window.scrollTo({ top: 0 });
+}));
+addEventListener("hashchange", () => setView(location.hash.slice(1)));
+
+/* ---------------- Page 1: Announcements ---------------- */
+function renderHome() {
+  const now = new Date(), today = todayCET();
+  $("todayLabel").textContent = fmtDay(today, { weekday: "long", day: "numeric", month: "long" });
+  $("clockTime").textContent = now.toLocaleTimeString("en-GB", { timeZone: TZ, hour: "2-digit", minute: "2-digit" }) + " " + tzAbbr(now);
+  $("clockZone").textContent = sameTZ ? "Central European Time" : `Your time: ${localTime(now)}`;
+
+  if (state.dbState !== "ready" || !state.sessionsLoaded) {
+    const msg = state.dbState === "off"
+      ? "<strong>The schedule could not load</strong>Open this page signed in to Claude to see the moderator schedule."
+      : "<strong>Loading the schedule…</strong>";
+    $("todayList").innerHTML = `<div class="empty">${ICON_EMPTY}<span>${msg}</span></div>`;
+    $("upList").innerHTML = "";
+    $("todayCount").textContent = $("upCount").textContent = "";
+    renderRoster();
+    return;
+  }
+
+  const todays = sortSessions(state.sessions.filter(s => s.date === today));
+  let nextMarked = false;
+  $("todayCount").textContent = todays.length ? `${todays.length} session${todays.length > 1 ? "s" : ""}` : "";
+  $("todayList").innerHTML = todays.length ? todays.map(s => {
+    const start = cetToDate(s.date, s.time), end = new Date(start.getTime() + s.duration * 60000);
+    let cls = "", pill;
+    if (now >= start && now < end) { cls = "is-live"; pill = `<span class="pill live">Live now</span>`; }
+    else if (now >= end) { cls = "is-done"; pill = `<span class="pill">Finished</span>`; }
+    else if (!nextMarked) { nextMarked = true; cls = "is-next"; pill = `<span class="pill next">Up next</span>`; }
+    else pill = `<span class="pill">Later today</span>`;
+    return `<article class="today-card ${cls}">
+      ${av(modName(s))}
+      <div class="tc-main">
+        <div class="tc-name">${esc(modName(s))}</div>
+        <div class="tc-time">${s.time} – ${addMin(s.time, s.duration)} ${tzAbbr(start)}${sameTZ ? "" : ` · ${localTime(start)} your time`}</div>
+        ${s.topic ? `<div class="tc-topic">${esc(s.topic)}</div>` : ""}
+      </div>
+      ${pill}
+    </article>`;
+  }).join("") : `<div class="empty">${ICON_EMPTY}<span><strong>No moderator is scheduled today</strong><br>Check the upcoming sessions or open the calendar.</span></div>`;
+
+  const upcoming = sortSessions(state.sessions.filter(s => s.date > today)).slice(0, 12);
+  $("upCount").textContent = upcoming.length ? `Next ${upcoming.length}` : "";
+  let lastDay = "";
+  $("upList").innerHTML = upcoming.length ? upcoming.map(s => {
+    const start = cetToDate(s.date, s.time);
+    const head = s.date !== lastDay ? `<div class="up-day">${fmtDay(s.date, { weekday: "long", day: "numeric", month: "long" })}</div>` : "";
+    lastDay = s.date;
+    return `${head}<div class="up-row">
+      ${av(modName(s), 36)}
+      <div class="up-name">${esc(modName(s))}${s.topic ? `<small>${esc(s.topic)}</small>` : ""}</div>
+      <div class="up-time">${s.time} ${tzAbbr(start)}${sameTZ ? "" : `<small>${localTime(start)} your time</small>`}</div>
+    </div>`;
+  }).join("") : `<div class="empty">${ICON_EMPTY}<span><strong>No upcoming sessions yet</strong><br>Schedule moderators on the calendar page.</span></div>`;
+
+  renderRoster();
+}
+
+function renderRoster() {
+  if (!state.modsLoaded) { $("roster").innerHTML = `<p style="color:var(--ink-3)">${state.dbState === "off" ? "Moderators appear here when the page is opened signed in to Claude." : "Loading moderators…"}</p>`; return; }
+  if (!state.mods.length) { $("roster").innerHTML = `<p style="color:var(--ink-3)">No moderators yet. Add them on the calendar page.</p>`; return; }
+  const today = todayCET();
+  $("roster").innerHTML = state.mods.map(m => {
+    const next = sortSessions(state.sessions.filter(s => s.modId === m.id && s.date >= today))
+      .find(s => cetToDate(s.date, s.time).getTime() + s.duration * 60000 > Date.now());
+    return `<article class="panel roster-item">
+      ${av(m.name, 68)}
+      <h3>${esc(m.name)}</h3>
+      <p>${esc(m.role || "Moderator")}</p>
+      <span class="next-slot">${next ? `Next: ${fmtDay(next.date, { weekday: "short", day: "numeric", month: "short" })} · ${next.time}` : "No session scheduled"}</span>
+    </article>`;
+  }).join("");
+}
+
+/* ---------------- Page 2: Calendar ---------------- */
+function renderCalendar() {
+  const { calY: y, calM: m } = state, today = todayCET();
+  $("calTitle").textContent = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-GB", { timeZone: "UTC", month: "long", year: "numeric" });
+  $("tzNow").textContent = tzAbbr(new Date());
+  const first = (new Date(Date.UTC(y, m - 1, 1)).getUTCDay() + 6) % 7;
+  const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  let html = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => `<div class="dow">${d}</div>`).join("");
+  for (let i = 0; i < first; i++) html += `<div class="day blank"></div>`;
+  for (let d = 1; d <= days; d++) {
+    const k = keyOf(y, m, d);
+    const list = sortSessions(state.sessions.filter(s => s.date === k));
+    const dots = list.slice(0, 3).map(s => `<span class="dot">${esc(initials(modName(s)))}</span>`).join("") + (list.length > 3 ? `<span class="dot more">+${list.length - 3}</span>` : "");
+    const label = fmtDay(k, { weekday: "long", day: "numeric", month: "long" }) + (list.length ? `, ${list.length} scheduled` : "");
+    html += `<button class="day${k < today ? " past" : ""}${k === today ? " today" : ""}" data-k="${k}" aria-pressed="${k === state.sel}" aria-label="${esc(label)}">
+      <span class="day-num">${d}</span><span class="day-dots">${dots}</span></button>`;
+  }
+  $("calGrid").innerHTML = html;
+}
+$("calGrid").addEventListener("click", e => {
+  const b = e.target.closest(".day[data-k]");
+  if (!b) return;
+  state.sel = b.dataset.k;
+  renderCalendar(); renderDay();
+});
+function shiftMonth(n) { let m = state.calM + n, y = state.calY; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } state.calY = y; state.calM = m; renderCalendar(); }
+$("prevMonth").addEventListener("click", () => shiftMonth(-1));
+$("nextMonth").addEventListener("click", () => shiftMonth(1));
+$("todayBtn").addEventListener("click", () => { const [y, m] = todayCET().split("-").map(Number); state.calY = y; state.calM = m; state.sel = todayCET(); renderCalendar(); renderDay(); });
+
+let pendingRemove = null;   // session id awaiting inline confirmation
+function renderDay() {
+  const k = state.sel, past = k < todayCET();
+  $("dayTitle").textContent = fmtDay(k, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const list = sortSessions(state.sessions.filter(s => s.date === k));
+  $("daySub").textContent = list.length ? `${list.length} moderator session${list.length > 1 ? "s" : ""} · announced on page 1` : (past ? "No sessions were scheduled on this day." : "Nobody scheduled yet. Add a moderator below.");
+  const editable = state.canWrite !== false && state.dbState === "ready";
+  $("schedList").innerHTML = list.map(s => {
+    const start = cetToDate(s.date, s.time);
+    const actions = !editable ? "" : pendingRemove === s.id
+      ? `<span class="row-actions"><button class="text-btn danger" data-confirm-remove="${s.id}">Remove</button><button class="text-btn" data-cancel-remove>Keep</button></span>`
+      : `<span class="row-actions"><button class="text-btn danger" data-remove="${s.id}" aria-label="Remove ${esc(modName(s))} at ${s.time}">Remove</button></span>`;
+    return `<div class="sched-row">${av(modName(s), 34)}
+      <div class="meta"><strong>${esc(modName(s))}</strong><span>${s.time} – ${addMin(s.time, s.duration)} ${tzAbbr(start)}${s.topic ? " · " + esc(s.topic) : ""}</span></div>${actions}</div>`;
+  }).join("");
+  const form = $("schedForm");
+  form.hidden = !editable;
+  $("schedBtn").disabled = past || !state.mods.length;
+  $("schedMsg").className = "msg";
+  $("schedMsg").textContent = past ? "This date has passed. Pick today or a later date." : (!state.mods.length ? "Add a moderator first." : "");
+}
+$("schedList").addEventListener("click", async e => {
+  const r = e.target.closest("[data-remove]"), c = e.target.closest("[data-confirm-remove]"), k = e.target.closest("[data-cancel-remove]");
+  if (r) { pendingRemove = r.dataset.remove; renderDay(); }
+  if (k) { pendingRemove = null; renderDay(); }
+  if (c) {
+    pendingRemove = null;
+    try { await state.db.collection("sessions").doc(c.dataset.confirmRemove).delete(); toast("Session removed from the announcements."); }
+    catch (err) { handleWriteError(err); }
+  }
+});
+
+function renderModSelect() {
+  const sel = $("sMod"), keep = sel.value;
+  sel.innerHTML = state.mods.map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join("");
+  if (state.mods.some(m => m.id === keep)) sel.value = keep;
+}
+
+$("schedForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = $("schedMsg"); msg.className = "msg err";
+  const modId = $("sMod").value, time = $("sTime").value, duration = +$("sDur").value, topic = $("sTopic").value.trim();
+  const mod = state.mods.find(m => m.id === modId);
+  if (!mod) { msg.textContent = "Choose a moderator."; return; }
+  if (!/^\d{2}:\d{2}$/.test(time)) { msg.textContent = "Enter a start time."; return; }
+  const start = cetToDate(state.sel, time);
+  if (start.getTime() < Date.now()) { msg.textContent = "That time has already passed in CET."; return; }
+  const toMin = t => +t.slice(0, 2) * 60 + +t.slice(3);
+  const clash = state.sessions.find(s => s.modId === modId && s.date === state.sel &&
+    toMin(time) < toMin(s.time) + s.duration && toMin(s.time) < toMin(time) + duration);
+  if (clash) { msg.textContent = `${mod.name} already moderates at ${clash.time} that day.`; return; }
+
+  $("schedBtn").disabled = true;
+  try {
+    await state.db.collection("sessions").add({ modId, modName: mod.name, date: state.sel, time, duration, topic, createdAt: new Date().toISOString() });
+    $("sTopic").value = "";
+    msg.className = "msg ok";
+    msg.textContent = `${mod.name} is announced for ${time} ${tzAbbr(start)}.`;
+    toast(`Announced: ${mod.name}, ${fmtDay(state.sel, { day: "numeric", month: "short" })} at ${time}`);
+  } catch (err) { handleWriteError(err, msg); }
+  $("schedBtn").disabled = false;
+});
+
+let pendingModRemove = null;
+function renderModList() {
+  const editable = state.canWrite !== false && state.dbState === "ready";
+  $("modForm").hidden = !editable;
+  if (!state.modsLoaded) { $("modList").innerHTML = `<p class="muted-line">${state.dbState === "off" ? "Unavailable." : "Loading…"}</p>`; return; }
+  const today = todayCET();
+  $("modList").innerHTML = state.mods.length ? state.mods.map(m => {
+    const upcoming = state.sessions.filter(s => s.modId === m.id && s.date >= today).length;
+    const actions = !editable ? "" : pendingModRemove === m.id
+      ? `<span class="row-actions"><button class="text-btn danger" data-confirm-mod="${esc(m.id)}">Remove</button><button class="text-btn" data-cancel-mod>Keep</button></span>`
+      : `<span class="row-actions"><button class="text-btn danger" data-remove-mod="${esc(m.id)}" aria-label="Remove ${esc(m.name)}">Remove</button></span>`;
+    return `<div class="mod-row">${av(m.name, 36)}<div class="meta"><strong>${esc(m.name)}</strong><span>${esc(m.role || "Moderator")} · ${upcoming} upcoming</span></div>${actions}</div>`;
+  }).join("") : `<p class="muted-line">No moderators yet. Add the first one below.</p>`;
+}
+$("modList").addEventListener("click", async e => {
+  const r = e.target.closest("[data-remove-mod]"), c = e.target.closest("[data-confirm-mod]"), k = e.target.closest("[data-cancel-mod]");
+  if (r) { pendingModRemove = r.dataset.removeMod; renderModList(); }
+  if (k) { pendingModRemove = null; renderModList(); }
+  if (c) {
+    pendingModRemove = null;
+    try { await state.db.collection("moderators").doc(c.dataset.confirmMod).delete(); toast("Moderator removed. Their existing sessions stay on the calendar."); }
+    catch (err) { handleWriteError(err); }
+  }
+});
+$("modForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const msg = $("modMsg"); msg.className = "msg err";
+  const name = $("mName").value.trim().replace(/\s+/g, " "), role = $("mRole").value.trim();
+  if (name.length < 2) { msg.textContent = "Enter the moderator's name."; return; }
+  if (state.mods.some(m => m.name.toLowerCase() === name.toLowerCase())) { msg.textContent = `${name} is already on the list.`; return; }
+  const slug = name.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "moderator";
+  const id = state.mods.some(m => m.id === slug) ? `${slug}-${Date.now().toString(36)}` : slug;
+  $("modBtn").disabled = true;
+  try {
+    await state.db.collection("moderators").doc(id).set({ name, role: role || "Moderator", createdAt: new Date().toISOString() });
+    $("mName").value = ""; $("mRole").value = "";
+    msg.className = "msg ok"; msg.textContent = `${name} is added and ready to schedule.`;
+    $("sMod").value = id;
+  } catch (err) { handleWriteError(err, msg); }
+  $("modBtn").disabled = false;
+});
+
+function handleWriteError(err, msgEl) {
+  let text = "Could not save. Please try again.";
+  if (err?.code === "invalid_argument" || err?.code === "not_granted") {
+    state.canWrite = false; applyAccess();
+    text = "You have view access only. Ask the page owner for Editor access to schedule moderators.";
+  } else if (err?.code === "quota_exceeded") text = "The schedule is full. Remove old sessions, then try again.";
+  if (msgEl) { msgEl.className = "msg err"; msgEl.textContent = text; } else toast(text);
+}
+function applyAccess() {
+  const n = $("accessNotice");
+  if (state.dbState === "off") { n.hidden = false; n.textContent = "The calendar needs this page to be opened signed in to Claude."; }
+  else if (state.canWrite === false) { n.hidden = false; n.textContent = "You are viewing the calendar. Only the organisers can schedule moderators."; }
+  else n.hidden = true;
+  renderDay(); renderModList();
+}
+
+function renderAll() {
+  renderModSelect(); renderHome(); renderCalendar(); renderDay(); renderModList();
+}
+
+/* ---------------- Shared schedule (db) ---------------- */
+(async () => {
+  let db = null, user = null;
+  try {
+    if (window.claude?.use) [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+  } catch {}
+  if (!db) { state.dbState = "off"; applyAccess(); renderAll(); return; }
+  state.db = db; state.dbState = "ready";
+  if (user) { try { state.canWrite = await user.canEdit(); } catch { state.canWrite = null; } }
+  db.collection("moderators").onSnapshot(snap => {
+    state.mods = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+      .sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")) || a.name.localeCompare(b.name));
+    state.modsLoaded = true; renderAll();
+  }, () => { state.dbState = "off"; applyAccess(); renderAll(); });
+  db.collection("sessions").onSnapshot(snap => {
+    state.sessions = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(s => s.date && s.time && s.modId)
+      .map(s => ({ ...s, duration: +s.duration || 60 }));
+    state.sessionsLoaded = true; renderAll();
+  }, () => { state.dbState = "off"; applyAccess(); renderAll(); });
+  applyAccess();
+})();
+
+/* ---------------- Starfield ---------------- */
+(function () {
+  const c = $("stars"), ctx = c.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let pts = [], w = 0, h = 0, dpr = 1;
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2); w = c.width = innerWidth * dpr; h = c.height = innerHeight * dpr;
+    pts = Array.from({ length: Math.round(innerWidth * innerHeight / 5500) }, () => ({
+      x: Math.random() * w, y: Math.random() * h, r: (Math.random() * 1.1 + 0.25) * dpr,
+      p: Math.random() * 6.28, s: 0.004 + Math.random() * 0.012, gold: Math.random() < 0.18 }));
+  }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    for (const s of pts) {
+      s.p += s.s; const a = 0.45 + Math.sin(s.p) * 0.4;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.28);
+      ctx.fillStyle = s.gold ? `rgba(246,215,124,${a})` : `rgba(220,232,255,${a})`; ctx.fill();
+    }
+    if (!reduce) requestAnimationFrame(draw);
+  }
+  addEventListener("resize", () => { resize(); if (reduce) draw(); });
+  resize(); draw();
+})();
+
+/* ---------------- Init ---------------- */
+setView(location.hash.slice(1));
+renderAll();
+setInterval(renderHome, 30000);   // keeps "Live now / Up next" and the clock current
+</script>

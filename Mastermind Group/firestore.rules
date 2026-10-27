@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Organisers who may schedule moderators. Use lowercase emails, comma-separated.
+    function isOrganiser() {
+      return request.auth != null
+        && request.auth.token.email in ['amtraining.de@gmail.com'];
+    }
+
+    // Everyone can read the announcements; only organisers can change them.
+    match /moderators/{id} {
+      allow read: if true;
+      allow write: if isOrganiser()
+        && (request.method == 'delete' || request.resource.data.name is string);
+    }
+
+    match /sessions/{id} {
+      allow read: if true;
+      allow write: if isOrganiser()
+        && (request.method == 'delete'
+            || (request.resource.data.date is string
+                && request.resource.data.time is string
+                && request.resource.data.modId is string));
+    }
+
+    // Anything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mastermind Group</title>
+<meta name="description" content="A collaborative community of growth-minded entrepreneurs, professionals and leaders. Book a session with a Mastermind Group moderator.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='40' fill='%230b1f6e'/%3E%3Ccircle cx='100' cy='100' r='80' fill='none' stroke='%23e9c15a' stroke-width='8'/%3E%3Cpolygon points='100,20 169.3,140 30.7,140' fill='none' stroke='%23e9c15a' stroke-width='10' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --space-900: #030a2b;
+    --space-800: #061444;
+    --space-700: #0b1f6e;
+    --space-600: #12309e;
+    --space-500: #1d47d1;
+    --space-400: #3b6bff;
+    --sky: #8fb4ff;
+    --gold-100: #fff3c4;
+    --gold-300: #f6d77c;
+    --gold-400: #e9c15a;
+    --gold-500: #d4a237;
+    --gold-700: #9c6f17;
+    --ink: #eef2ff;
+    --ink-soft: #b9c6ef;
+    --ink-mute: #8494c7;
+    --line: rgba(233, 193, 90, 0.22);
+    --glass: rgba(10, 28, 96, 0.45);
+    --glass-strong: rgba(8, 22, 78, 0.78);
+    --ok: #5fd39a;
+    --danger: #ff8a8a;
+    --gold-grad: linear-gradient(135deg, #fff3c4 0%, #f6d77c 25%, #d4a237 55%, #f6d77c 80%, #b8861f 100%);
+    --radius: 18px;
+    --shadow: 0 20px 60px -20px rgba(0, 0, 0, 0.6);
+    --serif: "Cinzel", "Trajan Pro", Georgia, serif;
+    --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--space-900);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  :focus-visible { outline: 2px solid var(--gold-300); outline-offset: 3px; border-radius: 6px; }
+
+  /* ---------- Cosmic background ---------- */
+  .cosmos {
+    position: fixed; inset: 0; z-index: -2;
+    background:
+      radial-gradient(ellipse 60% 50% at 15% 20%, rgba(59, 107, 255, 0.35), transparent 70%),
+      radial-gradient(ellipse 55% 45% at 85% 35%, rgba(29, 71, 209, 0.45), transparent 70%),
+      radial-gradient(ellipse 70% 60% at 50% 100%, rgba(18, 48, 158, 0.55), transparent 70%),
+      linear-gradient(180deg, #061444 0%, #030a2b 100%);
+  }
+  #stars { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+
+  .wrap { width: min(1180px, 100% - 32px); margin-inline: auto; }
+
+  /* ---------- Typography helpers ---------- */
+  .gold-text {
+    background: var(--gold-grad);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-family: var(--serif); font-size: 0.8rem; letter-spacing: 0.32em;
+    text-transform: uppercase; color: var(--gold-300);
+  }
+  .eyebrow::before, .eyebrow::after {
+    content: ""; width: 28px; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-400), transparent);
+  }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; letter-spacing: 0.02em; line-height: 1.15; }
+  h2 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin: 14px 0 16px; }
+  .lead { color: var(--ink-soft); font-size: 1.08rem; max-width: 640px; }
+  .section { padding: 110px 0; position: relative; }
+  .section-head { text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 56px; }
+  .section-head .lead { margin-inline: auto; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 14px 28px; border-radius: 999px; font-weight: 600; font-size: 0.95rem;
+    letter-spacing: 0.02em; transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .btn-gold {
+    background: var(--gold-grad); color: #2a1a00;
+    box-shadow: 0 10px 30px -10px rgba(233, 193, 90, 0.7), inset 0 1px 0 rgba(255,255,255,0.6);
+  }
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -10px rgba(233, 193, 90, 0.85), inset 0 1px 0 rgba(255,255,255,0.6); }
+  .btn-ghost { border: 1px solid var(--line); color: var(--gold-100); background: rgba(255,255,255,0.03); }
+  .btn-ghost:hover { border-color: var(--gold-400); background: rgba(233,193,90,0.08); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    transition: background .3s ease, border-color .3s ease, backdrop-filter .3s ease;
+    border-bottom: 1px solid transparent;
+  }
+  .nav.scrolled { background: rgba(3, 10, 43, 0.78); backdrop-filter: blur(14px); border-color: var(--line); }
+  .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 76px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand svg { width: 38px; height: 38px; filter: drop-shadow(0 0 10px rgba(233,193,90,0.45)); }
+  .brand-name { font-family: var(--serif); font-weight: 700; font-size: 1.15rem; letter-spacing: 0.08em; line-height: 1; }
+  .brand-name small { display: block; font-size: 0.6rem; letter-spacing: 0.5em; color: var(--gold-300); margin-top: 4px; font-weight: 500; }
+  .nav-links { display: flex; align-items: center; gap: 34px; }
+  .nav-links a:not(.btn) { color: var(--ink-soft); font-size: 0.92rem; font-weight: 500; transition: color .2s; }
+  .nav-links a:not(.btn):hover { color: var(--gold-300); }
+  .nav-links .btn { padding: 10px 22px; }
+  .menu-btn { display: none; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); align-items: center; justify-content: center; }
+  .menu-btn span, .menu-btn span::before, .menu-btn span::after { display: block; width: 18px; height: 2px; background: var(--gold-300); position: relative; border-radius: 2px; }
+  .menu-btn span::before, .menu-btn span::after { content: ""; position: absolute; left: 0; }
+  .menu-btn span::before { top: -6px; } .menu-btn span::after { top: 6px; }
+
+  /* ---------- Hero ---------- */
+  .hero { min-height: 100vh; display: flex; align-items: center; padding: 120px 0 80px; }
+  .hero-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 60px; align-items: center; }
+  .hero h1 { font-size: clamp(2.6rem, 6vw, 4.6rem); margin: 22px 0 22px; }
+  .hero h1 .gold-text { display: block; }
+  .hero .lead { font-size: 1.15rem; }
+  .hero-ctas { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 36px; }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--line); }
+  .hero-meta div { display: flex; flex-direction: column; }
+  .hero-meta strong { font-family: var(--serif); font-size: 1.05rem; color: var(--gold-100); letter-spacing: 0.04em; }
+  .hero-meta span { color: var(--ink-mute); font-size: 0.85rem; }
+
+  .emblem-stage { position: relative; aspect-ratio: 1; max-width: 480px; margin-inline: auto; width: 100%; }
+  .emblem-stage::before {
+    content: ""; position: absolute; inset: 8%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(246,215,124,0.35), rgba(59,107,255,0.15) 45%, transparent 70%);
+    filter: blur(20px); animation: pulse 6s ease-in-out infinite;
+  }
+  .emblem-img {
+    position: absolute; inset: 0; border-radius: 32px; overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: 0 40px 100px -30px rgba(29, 71, 209, 0.9), 0 0 0 8px rgba(233,193,90,0.05);
+  }
+  .emblem-img img { width: 100%; height: 100%; object-fit: cover; }
+  .orbit { position: absolute; inset: -6%; border: 1px dashed rgba(233,193,90,0.25); border-radius: 50%; animation: spin 60s linear infinite; }
+  .orbit::after { content: ""; position: absolute; top: -5px; left: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--gold-300); box-shadow: 0 0 16px var(--gold-300); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes pulse { 50% { opacity: .6; transform: scale(1.05); } }
+
+  /* ---------- Cards / glass ---------- */
+  .glass {
+    background: var(--glass);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    backdrop-filter: blur(12px);
+  }
+
+  /* ---------- About ---------- */
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .about-quote {
+    padding: 44px; position: relative;
+    background: linear-gradient(160deg, rgba(29,71,209,0.35), rgba(6,20,68,0.6));
+  }
+  .about-quote p { font-family: var(--serif); font-size: clamp(1.25rem, 2.4vw, 1.6rem); line-height: 1.5; color: var(--gold-100); }
+  .about-quote::before {
+    content: "\201C"; position: absolute; top: -26px; left: 30px;
+    font-family: var(--serif); font-size: 6rem; line-height: 1; color: var(--gold-400);
+  }
+  .about-text p + p { margin-top: 18px; }
+  .about-text p { color: var(--ink-soft); }
+  .check-list { list-style: none; margin-top: 28px; display: grid; gap: 14px; }
+  .check-list li { display: flex; gap: 14px; align-items: flex-start; color: var(--ink); }
+  .check-list svg { flex: none; width: 22px; height: 22px; margin-top: 2px; }
+
+  /* ---------- Pillars ---------- */
+  .pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .pillar { padding: 34px 28px; transition: transform .3s ease, border-color .3s ease; }
+  .pillar:hover { transform: translateY(-6px); border-color: rgba(233,193,90,0.55); }
+  .pillar-icon {
+    width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 22px;
+    background: radial-gradient(circle at 30% 30%, rgba(246,215,124,0.3), rgba(233,193,90,0.06));
+    border: 1px solid var(--line);
+  }
+  .pillar-icon svg { width: 28px; height: 28px; }
+  .pillar h3 { font-size: 1.12rem; margin-bottom: 10px; color: var(--gold-100); }
+  .pillar p { color: var(--ink-soft); font-size: 0.95rem; }
+
+  /* ---------- Steps ---------- */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; counter-reset: step; position: relative; }
+  .step { padding: 36px 30px; position: relative; }
+  .step-num {
+    font-family: var(--serif); font-size: 2.6rem; font-weight: 700; line-height: 1;
+    margin-bottom: 18px; display: block;
+  }
+  .step h3 { font-size: 1.15rem; margin-bottom: 10px; }
+  .step p { color: var(--ink-soft); font-size: 0.95rem; }
+
+  /* ---------- Moderators ---------- */
+  .mods { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+  .mod { padding: 32px 26px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+  .avatar {
+    width: 96px; height: 96px; border-radius: 50%; display: grid; place-items: center;
+    font-family: var(--serif); font-size: 1.7rem; font-weight: 700; color: var(--gold-100);
+    background: radial-gradient(circle at 30% 25%, var(--space-400), var(--space-700));
+    position: relative; margin-bottom: 20px;
+  }
+  .avatar::before {
+    content: ""; position: absolute; inset: -4px; border-radius: 50%; padding: 2px;
+    background: var(--gold-grad);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+  }
+  .mod h3 { font-size: 1.1rem; margin-bottom: 4px; }
+  .mod .role { color: var(--gold-300); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.03em; margin-bottom: 14px; }
+  .mod p { color: var(--ink-soft); font-size: 0.9rem; margin-bottom: 18px; flex: 1; }
+  .mod .avail { font-size: 0.78rem; color: var(--ink-mute); margin-bottom: 18px; }
+  .mod .btn { padding: 10px 20px; font-size: 0.85rem; }
+
+  /* ---------- Booking ---------- */
+  .booking { padding: 0; overflow: hidden; background: var(--glass-strong); box-shadow: var(--shadow); }
+  .booking-top {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
+    padding: 22px 28px; border-bottom: 1px solid var(--line);
+    background: linear-gradient(90deg, rgba(29,71,209,0.25), transparent);
+  }
+  .tz-badge {
+    display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: rgba(233,193,90,0.08); font-size: 0.85rem; color: var(--gold-100);
+  }
+  .tz-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 10px var(--ok); }
+  .tz-local { font-size: 0.82rem; color: var(--ink-mute); }
+
+  .mod-picker { display: flex; flex-wrap: wrap; gap: 10px; padding: 22px 28px; border-bottom: 1px solid var(--line); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 10px; padding: 8px 16px 8px 8px; border-radius: 999px;
+    border: 1px solid var(--line); background: rgba(255,255,255,0.03); font-size: 0.88rem; font-weight: 500;
+    color: var(--ink-soft); transition: all .2s;
+  }
+  .chip .mini { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 0.7rem; font-weight: 700; color: var(--gold-100); background: var(--space-600); font-family: var(--serif); }
+  .chip.all { padding-left: 16px; }
+  .chip:hover { border-color: rgba(233,193,90,0.5); color: var(--ink); }
+  .chip[aria-pressed="true"] { background: var(--gold-grad); color: #2a1a00; border-color: transparent; }
+  .chip[aria-pressed="true"] .mini { background: rgba(42,26,0,0.85); }
+
+  .booking-body { display: grid; grid-template-columns: 1.05fr 1fr; }
+  .cal { padding: 28px; border-right: 1px solid var(--line); }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .cal-head h3 { font-size: 1.25rem; }
+  .cal-nav { display: flex; gap: 8px; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--gold-300); transition: all .2s; }
+  .icon-btn:hover:not(:disabled) { background: rgba(233,193,90,0.1); border-color: var(--gold-400); }
+  .icon-btn:disabled { opacity: .3; cursor: not-allowed; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .dow { text-align: center; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-mute); padding: 6px 0 10px; font-weight: 600; }
+  .day {
+    aspect-ratio: 1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    font-size: 0.95rem; font-weight: 500; color: var(--ink-mute); position: relative; border: 1px solid transparent; transition: all .18s;
+  }
+  .day.empty { visibility: hidden; }
+  .day.available { color: var(--ink); background: rgba(59,107,255,0.14); border-color: rgba(143,180,255,0.15); }
+  .day.available:hover { border-color: var(--gold-400); background: rgba(233,193,90,0.12); }
+  .day.available::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: var(--gold-300); }
+  .day.full { color: var(--ink-mute); text-decoration: line-through; }
+  .day.today { box-shadow: inset 0 0 0 1px rgba(246,215,124,0.6); }
+  .day[aria-pressed="true"] { background: var(--gold-grad); color: #2a1a00; font-weight: 700; border-color: transparent; }
+  .day[aria-pressed="true"]::after { background: #2a1a00; }
+  .day:disabled { cursor: default; }
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 18px; font-size: 0.8rem; color: var(--ink-mute); }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend i { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
+
+  .slots { padding: 28px; display: flex; flex-direction: column; min-height: 460px; }
+  .slots-head h3 { font-size: 1.15rem; }
+  .slots-head p { color: var(--ink-mute); font-size: 0.85rem; margin-top: 4px; }
+  .slot-groups { margin-top: 20px; display: grid; gap: 22px; overflow-y: auto; max-height: 420px; padding-right: 6px; }
+  .slot-groups::-webkit-scrollbar { width: 6px; }
+  .slot-groups::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; }
+  .slot-group h4 { font-size: 0.82rem; font-weight: 600; color: var(--gold-300); letter-spacing: 0.06em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .slot-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+  .slot {
+    padding: 10px 8px; border-radius: 10px; border: 1px solid rgba(143,180,255,0.22); background: rgba(59,107,255,0.1);
+    font-weight: 600; font-size: 0.92rem; text-align: center; transition: all .18s; display: flex; flex-direction: column; line-height: 1.25;
+  }
+  .slot small { font-weight: 400; font-size: 0.7rem; color: var(--ink-mute); }
+  .slot:hover:not(:disabled) { border-color: var(--gold-400); background: rgba(233,193,90,0.12); }
+  .slot[aria-pressed="true"] { background: var(--gold-grad); color: #2a1a00; border-color: transparent; }
+  .slot[aria-pressed="true"] small { color: #5a3d00; }
+  .slot:disabled { opacity: .35; text-decoration: line-through; cursor: not-allowed; }
+  .placeholder { margin: auto; text-align: center; color: var(--ink-mute); max-width: 260px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .placeholder svg { width: 54px; height: 54px; opacity: .7; }
+
+  .form-wrap { border-top: 1px solid var(--line); padding: 28px; display: none; }
+  .form-wrap.show { display: block; animation: fadeUp .35s ease; }
+  .summary {
+    display: flex; flex-wrap: wrap; gap: 14px 28px; padding: 18px 20px; border-radius: 14px; margin-bottom: 24px;
+    background: rgba(233,193,90,0.08); border: 1px solid var(--line);
+  }
+  .summary div { display: flex; flex-direction: column; }
+  .summary span { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-mute); }
+  .summary strong { color: var(--gold-100); font-weight: 600; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: 0.82rem; font-weight: 600; color: var(--ink-soft); }
+  .field input, .field select, .field textarea {
+    font: inherit; color: var(--ink); background: rgba(3,10,43,0.6); border: 1px solid rgba(143,180,255,0.22);
+    border-radius: 12px; padding: 12px 14px; transition: border-color .2s, box-shadow .2s;
+  }
+  .field select option { background: var(--space-800); }
+  .field textarea { resize: vertical; min-height: 90px; }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--gold-400); box-shadow: 0 0 0 3px rgba(233,193,90,0.18); }
+  .field .err { color: var(--danger); font-size: 0.78rem; min-height: 1em; }
+  .form-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 22px; }
+  .form-actions small { color: var(--ink-mute); font-size: 0.8rem; max-width: 360px; }
+
+  .confirm { padding: 48px 28px; text-align: center; display: none; }
+  .confirm.show { display: block; animation: fadeUp .4s ease; }
+  .confirm-icon { width: 76px; height: 76px; margin: 0 auto 22px; border-radius: 50%; display: grid; place-items: center; background: var(--gold-grad); box-shadow: 0 0 40px rgba(233,193,90,0.5); }
+  .confirm h3 { font-size: 1.6rem; margin-bottom: 10px; }
+  .confirm p { color: var(--ink-soft); max-width: 520px; margin: 0 auto; }
+  .confirm .summary { justify-content: center; max-width: 640px; margin: 26px auto; text-align: left; }
+  .confirm-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .my-bookings { margin-top: 26px; padding: 24px 28px; display: none; }
+  .my-bookings.show { display: block; }
+  .my-bookings h3 { font-size: 1.05rem; margin-bottom: 14px; }
+  .booking-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-top: 1px solid rgba(233,193,90,0.12); font-size: 0.9rem; }
+  .booking-row:first-of-type { border-top: none; }
+  .booking-row .meta { color: var(--ink-mute); font-size: 0.82rem; }
+  .link-btn { color: var(--gold-300); font-size: 0.85rem; font-weight: 600; }
+  .link-btn:hover { text-decoration: underline; }
+  .link-btn.danger { color: var(--danger); }
+
+  /* ---------- FAQ ---------- */
+  .faq { max-width: 820px; margin-inline: auto; display: grid; gap: 14px; }
+  .faq details { padding: 0 26px; }
+  .faq summary {
+    list-style: none; cursor: pointer; padding: 22px 0; font-weight: 600; font-size: 1.02rem;
+    display: flex; justify-content: space-between; align-items: center; gap: 20px;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; font-family: var(--serif); font-size: 1.6rem; color: var(--gold-300); transition: transform .25s; line-height: 1; }
+  .faq details[open] summary::after { transform: rotate(45deg); }
+  .faq details p { color: var(--ink-soft); padding-bottom: 22px; margin-top: -6px; }
+
+  /* ---------- CTA band ---------- */
+  .cta-band {
+    text-align: center; padding: 70px 32px; position: relative; overflow: hidden;
+    background: radial-gradient(ellipse at 50% 0%, rgba(246,215,124,0.2), transparent 60%), linear-gradient(160deg, rgba(29,71,209,0.5), rgba(6,20,68,0.85));
+  }
+  .cta-band h2 { margin-top: 0; }
+  .cta-band .lead { margin: 0 auto 30px; }
+
+  /* ---------- Footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 46px 0; margin-top: 40px; background: rgba(3,10,43,0.6); }
+  .foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 22px; }
+  .foot p { color: var(--ink-mute); font-size: 0.85rem; }
+  .foot-links { display: flex; gap: 26px; flex-wrap: wrap; }
+  .foot-links a { color: var(--ink-soft); font-size: 0.88rem; }
+  .foot-links a:hover { color: var(--gold-300); }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 140%); z-index: 100;
+    padding: 14px 22px; border-radius: 14px; background: var(--space-800); border: 1px solid var(--gold-400);
+    color: var(--gold-100); font-size: 0.9rem; box-shadow: var(--shadow); transition: transform .35s ease; max-width: calc(100% - 32px);
+  }
+  .toast.show { transform: translate(-50%, 0); }
+
+  /* ---------- Reveal ---------- */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s ease, transform .8s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1024px) {
+    .pillars, .mods { grid-template-columns: repeat(2, 1fr); }
+    .booking-body { grid-template-columns: 1fr; }
+    .cal { border-right: none; border-bottom: 1px solid var(--line); }
+    .slots { min-height: 0; }
+  }
+  @media (max-width: 860px) {
+    .hero-grid, .about-grid { grid-template-columns: 1fr; }
+    .hero { text-align: center; }
+    .hero .lead { margin-inline: auto; }
+    .hero-ctas, .hero-meta { justify-content: center; }
+    .emblem-stage { max-width: 340px; order: -1; }
+    .steps { grid-template-columns: 1fr; }
+    .nav-links {
+      position: fixed; top: 76px; left: 0; right: 0; flex-direction: column; gap: 0; padding: 12px 16px 22px;
+      background: rgba(3,10,43,0.96); border-bottom: 1px solid var(--line); backdrop-filter: blur(14px);
+      transform: translateY(-120%); transition: transform .3s ease; z-index: -1;
+    }
+    .nav-links.open { transform: none; }
+    .nav-links a:not(.btn) { padding: 14px 0; width: 100%; text-align: center; }
+    .nav-links .btn { margin-top: 10px; }
+    .menu-btn { display: inline-flex; }
+    .section { padding: 80px 0; }
+  }
+  @media (max-width: 560px) {
+    .pillars, .mods { grid-template-columns: 1fr; }
+    .form-grid { grid-template-columns: 1fr; }
+    .cal, .slots, .form-wrap, .mod-picker, .booking-top { padding-left: 16px; padding-right: 16px; }
+    .cal-grid { gap: 4px; }
+    .day { font-size: 0.85rem; border-radius: 10px; }
+    .about-quote { padding: 34px 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div class="cosmos" aria-hidden="true"></div>
+<canvas id="stars" aria-hidden="true"></canvas>
+
+<!-- Reusable emblem (matches the logo: circle, triangle, six gold nodes) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff3c4"/>
+      <stop offset=".35" stop-color="#f6d77c"/>
+      <stop offset=".65" stop-color="#d4a237"/>
+      <stop offset="1" stop-color="#f6d77c"/>
+    </linearGradient>
+    <radialGradient id="g-core">
+      <stop offset="0" stop-color="#fffbe6"/>
+      <stop offset=".4" stop-color="#f6d77c" stop-opacity=".7"/>
+      <stop offset="1" stop-color="#f6d77c" stop-opacity="0"/>
+    </radialGradient>
+    <symbol id="emblem" viewBox="0 0 200 200">
+      <circle cx="100" cy="100" r="80" fill="none" stroke="url(#g-gold)" stroke-width="5"/>
+      <circle cx="100" cy="100" r="72" fill="none" stroke="url(#g-gold)" stroke-width="1.5" opacity=".7"/>
+      <polygon points="30.7,60 169.3,60 100,180" fill="none" stroke="url(#g-gold)" stroke-width="1.6" opacity=".8"/>
+      <line x1="100" y1="20" x2="100" y2="180" stroke="url(#g-gold)" stroke-width="1.2" opacity=".6"/>
+      <polygon points="100,20 169.3,140 30.7,140" fill="none" stroke="url(#g-gold)" stroke-width="9" stroke-linejoin="round"/>
+      <circle cx="100" cy="100" r="22" fill="url(#g-core)"/>
+      <g fill="url(#g-gold)">
+        <circle cx="100" cy="20" r="10"/><circle cx="169.3" cy="60" r="10"/><circle cx="169.3" cy="140" r="10"/>
+        <circle cx="100" cy="180" r="10"/><circle cx="30.7" cy="140" r="10"/><circle cx="30.7" cy="60" r="10"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- ================= NAV ================= -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a href="#top" class="brand" aria-label="Mastermind Group home">
+      <svg><use href="#emblem"/></svg>
+      <span class="brand-name gold-text">MASTERMIND<small>GROUP</small></span>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="Main">
+      <a href="#about">About</a>
+      <a href="#how">How It Works</a>
+      <a href="#moderators">Moderators</a>
+      <a href="#faq">FAQ</a>
+      <a href="#book" class="btn btn-gold">Book a Session</a>
+    </nav>
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks"><span></span></button>
+  </div>
+</header>
+
+<main id="top">
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="reveal">
+        <span class="eyebrow">Collective Growth Community</span>
+        <h1>Grow Faster, <span class="gold-text">Together.</span></h1>
+        <p class="lead">A collaborative community of growth-minded entrepreneurs, professionals and leaders who share insights, experiences, challenges and opportunities to accelerate personal and professional growth.</p>
+        <div class="hero-ctas">
+          <a href="#book" class="btn btn-gold">
+            Book a Session
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a href="#about" class="btn btn-ghost">Discover the Group</a>
+        </div>
+        <div class="hero-meta">
+          <div><strong>Structured</strong><span>Facilitated discussions</span></div>
+          <div><strong>Accountable</strong><span>Goals tracked together</span></div>
+          <div><strong>Diverse</strong><span>Cross-industry expertise</span></div>
+        </div>
+      </div>
+      <div class="emblem-stage reveal">
+        <div class="orbit" aria-hidden="true"></div>
+        <div class="emblem-img"><img src="assets/logo.jpg" alt="Mastermind Group logo: golden triangle within a circle on a cosmic blue background"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= ABOUT ================= -->
+  <section class="section" id="about">
+    <div class="wrap about-grid">
+      <div class="glass about-quote reveal">
+        <p>None of us is as smart as all of us. When diverse minds meet with a shared purpose, growth stops being a solo climb.</p>
+      </div>
+      <div class="about-text reveal">
+        <span class="eyebrow">What Is a Mastermind</span>
+        <h2>Where ambitious minds <span class="gold-text">align</span></h2>
+        <p>A Mastermind Group is a collaborative community of growth-minded entrepreneurs, professionals, and leaders who come together to share insights, experiences, challenges, and opportunities.</p>
+        <p>Through structured discussions, accountability, and collective problem-solving, members leverage the group's diverse knowledge and expertise to accelerate personal and professional growth.</p>
+        <ul class="check-list">
+          <li><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="url(#g-gold)" stroke-width="1.5"/><path d="M7 12.5l3.2 3L17 9" stroke="url(#g-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Fresh perspectives on your toughest business and career decisions</li>
+          <li><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="url(#g-gold)" stroke-width="1.5"/><path d="M7 12.5l3.2 3L17 9" stroke="url(#g-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>A trusted circle that holds you to the commitments you make</li>
+          <li><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" stroke="url(#g-gold)" stroke-width="1.5"/><path d="M7 12.5l3.2 3L17 9" stroke="url(#g-gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Opportunities, introductions and resources shared generously</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PILLARS ================= -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Our Pillars</span>
+        <h2>Four forces that <span class="gold-text">accelerate</span> growth</h2>
+      </div>
+      <div class="pillars">
+        <article class="glass pillar reveal">
+          <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="url(#g-gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg></div>
+          <h3>Shared Insights</h3>
+          <p>Members bring real experiences and lessons learned, so everyone benefits from a wider field of knowledge.</p>
+        </article>
+        <article class="glass pillar reveal">
+          <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="url(#g-gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h7"/><path d="M15 17l2 2 4-4"/></svg></div>
+          <h3>Structured Discussion</h3>
+          <p>Facilitated sessions with clear formats keep every conversation focused, fair and genuinely productive.</p>
+        </article>
+        <article class="glass pillar reveal">
+          <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="url(#g-gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2" fill="url(#g-gold)"/></svg></div>
+          <h3>Accountability</h3>
+          <p>Set meaningful goals and report back to peers who care about your progress and won't let you drift.</p>
+        </article>
+        <article class="glass pillar reveal">
+          <div class="pillar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="url(#g-gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8.5 15h-17z"/><circle cx="12" cy="3" r="1.4" fill="url(#g-gold)"/><circle cx="20.5" cy="18" r="1.4" fill="url(#g-gold)"/><circle cx="3.5" cy="18" r="1.4" fill="url(#g-gold)"/></svg></div>
+          <h3>Collective Problem-Solving</h3>
+          <p>Bring your hardest challenge to the "hot seat" and leave with actionable solutions from many angles.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section class="section" id="how" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">How It Works</span>
+        <h2>Your path into the <span class="gold-text">circle</span></h2>
+        <p class="lead">Joining is simple. Start with a one-to-one conversation with one of our moderators.</p>
+      </div>
+      <div class="steps">
+        <article class="glass step reveal">
+          <span class="step-num gold-text">01</span>
+          <h3>Book a Session</h3>
+          <p>Choose a moderator and pick a time that suits you. All times are shown in Central European Time.</p>
+        </article>
+        <article class="glass step reveal">
+          <span class="step-num gold-text">02</span>
+          <h3>Discovery Call</h3>
+          <p>Share your goals and challenges. Together we find the group and format that fits where you are heading.</p>
+        </article>
+        <article class="glass step reveal">
+          <span class="step-num gold-text">03</span>
+          <h3>Join &amp; Grow</h3>
+          <p>Take your seat at the table, contribute, commit to goals, and grow alongside peers who push you further.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MODERATORS ================= -->
+  <section class="section" id="moderators" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Meet the Moderators</span>
+        <h2>Guided by experienced <span class="gold-text">facilitators</span></h2>
+        <p class="lead">Each moderator keeps sessions structured, inclusive and focused on real outcomes.</p>
+      </div>
+      <div class="mods" id="modCards"><!-- rendered from MODERATORS config --></div>
+    </div>
+  </section>
+
+  <!-- ================= BOOKING ================= -->
+  <section class="section" id="book" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">Calendar Planner</span>
+        <h2>Book your <span class="gold-text">session</span></h2>
+        <p class="lead">Select a moderator, choose a date and pick an open time slot. All times are in Central European Time.</p>
+      </div>
+
+      <div class="glass booking reveal" id="bookingCard">
+        <div class="booking-top">
+          <div class="tz-badge"><span class="dot"></span><span>Timezone: <strong id="tzLabel">CET</strong> · Central European Time</span></div>
+          <span class="tz-local" id="tzLocal"></span>
+        </div>
+
+        <div class="mod-picker" id="modPicker" role="group" aria-label="Choose a moderator"></div>
+
+        <div id="bookingFlow">
+          <div class="booking-body">
+            <div class="cal">
+              <div class="cal-head">
+                <h3 id="calTitle">Month</h3>
+                <div class="cal-nav">
+                  <button class="icon-btn" id="prevMonth" aria-label="Previous month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+                  <button class="icon-btn" id="nextMonth" aria-label="Next month"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+                </div>
+              </div>
+              <div class="cal-grid" id="calGrid"></div>
+              <div class="legend">
+                <span><i style="background:rgba(59,107,255,.25);border:1px solid rgba(143,180,255,.3)"></i>Available</span>
+                <span><i style="background:var(--gold-grad)"></i>Selected</span>
+                <span><i style="box-shadow:inset 0 0 0 1px rgba(246,215,124,.6)"></i>Today</span>
+              </div>
+            </div>
+
+            <div class="slots">
+              <div class="slots-head">
+                <h3 id="slotsTitle">Available times</h3>
+                <p id="slotsSub">Pick a date to see open slots</p>
+              </div>
+              <div class="slot-groups" id="slotGroups"></div>
+              <div class="placeholder" id="slotsPlaceholder">
+                <svg viewBox="0 0 24 24" fill="none" stroke="url(#g-gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="1.4" fill="url(#g-gold)"/></svg>
+                <span>Select a highlighted date on the calendar to view available times.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-wrap" id="formWrap">
+            <div class="summary" id="summary"></div>
+            <form id="bookForm" novalidate>
+              <div class="form-grid">
+                <div class="field">
+                  <label for="fName">Full name *</label>
+                  <input id="fName" name="name" autocomplete="name" required>
+                  <span class="err" data-for="fName"></span>
+                </div>
+                <div class="field">
+                  <label for="fEmail">Email *</label>
+                  <input id="fEmail" name="email" type="email" autocomplete="email" required>
+                  <span class="err" data-for="fEmail"></span>
+                </div>
+                <div class="field">
+                  <label for="fCompany">Company / Role</label>
+                  <input id="fCompany" name="company" autocomplete="organization">
+                </div>
+                <div class="field">
+                  <label for="fType">Session type *</label>
+                  <select id="fType" name="type" required>
+                    <option value="Discovery Call">Discovery Call</option>
+                    <option value="Membership Consultation">Membership Consultation</option>
+                    <option value="Hot Seat Preparation">Hot Seat Preparation</option>
+                    <option value="Accountability Check-in">Accountability Check-in</option>
+                  </select>
+                </div>
+                <div class="field full">
+                  <label for="fNotes">What would you like to focus on?</label>
+                  <textarea id="fNotes" name="notes" placeholder="Share your goals, current challenges, or questions for the moderator..."></textarea>
+                </div>
+              </div>
+              <div class="form-actions">
+                <small>By booking you agree to be contacted about your session. Times are in Central European Time.</small>
+                <div style="display:flex;gap:10px;flex-wrap:wrap">
+                  <button type="button" class="btn btn-ghost" id="cancelSel">Change time</button>
+                  <button type="submit" class="btn btn-gold">Confirm Booking</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="confirm" id="confirm" aria-live="polite">
+          <div class="confirm-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2a1a00" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+          <h3 class="gold-text">Your session is booked</h3>
+          <p id="confirmText"></p>
+          <div class="summary" id="confirmSummary"></div>
+          <div class="confirm-actions">
+            <a class="btn btn-gold" id="gcalLink" target="_blank" rel="noopener">Add to Google Calendar</a>
+            <button class="btn btn-ghost" id="icsBtn">Download .ics</button>
+            <button class="btn btn-ghost" id="bookAnother">Book another</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass my-bookings" id="myBookings" aria-live="polite">
+        <h3>Your upcoming sessions</h3>
+        <div id="myBookingsList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="section" id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head reveal">
+        <span class="eyebrow">FAQ</span>
+        <h2>Questions, <span class="gold-text">answered</span></h2>
+      </div>
+      <div class="faq">
+        <details class="glass reveal"><summary>Who is the Mastermind Group for?</summary><p>Growth-minded entrepreneurs, professionals and leaders who want to accelerate their progress through peer insight, structured discussion and genuine accountability.</p></details>
+        <details class="glass reveal"><summary>How are sessions structured?</summary><p>Each meeting follows a facilitated format: wins and updates, one or more "hot seat" deep dives on a member's challenge, and clear commitments everyone reports back on next time.</p></details>
+        <details class="glass reveal"><summary>Why are times shown in CET?</summary><p>Our moderators and sessions run on Central European Time (CET, or CEST during summer). The planner also shows your local time so you never miss a session.</p></details>
+        <details class="glass reveal"><summary>Can I reschedule or cancel a booking?</summary><p>Yes. Your upcoming sessions appear below the planner, where you can cancel and pick a new time. Please let your moderator know at least 24 hours in advance.</p></details>
+        <details class="glass reveal"><summary>What happens after my discovery call?</summary><p>Your moderator recommends the group that best fits your goals and experience, and walks you through membership and the next steps to take your seat.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CTA ================= -->
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="glass cta-band reveal">
+        <svg width="72" height="72" style="margin:0 auto 18px;display:block;filter:drop-shadow(0 0 18px rgba(233,193,90,.5))"><use href="#emblem"/></svg>
+        <h2>Ready to take your <span class="gold-text">seat at the table?</span></h2>
+        <p class="lead">Your next breakthrough is one conversation away.</p>
+        <a href="#book" class="btn btn-gold">Book a Session</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <a href="#top" class="brand" aria-label="Back to top">
+      <svg><use href="#emblem"/></svg>
+      <span class="brand-name gold-text">MASTERMIND<small>GROUP</small></span>
+    </a>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="#about">About</a><a href="#how">How It Works</a><a href="#moderators">Moderators</a><a href="#book">Book</a><a href="#faq">FAQ</a>
+    </nav>
+    <p>&copy; <span id="year"></span> Mastermind Group. All rights reserved.</p>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ==========================================================================
+   CONFIGURATION — edit moderators, availability and session length here.
+   Days: 1 = Monday ... 7 = Sunday. Hours are start times in CET (Europe/Berlin).
+   ========================================================================== */
+const TIMEZONE = "Europe/Berlin";      // Central European Time (CET / CEST)
+const SESSION_MINUTES = 45;
+const BOOKING_WINDOW_DAYS = 60;        // how far ahead people can book
+const MIN_NOTICE_HOURS = 12;           // earliest bookable slot from now
+
+/* Booking emails — free access key from https://web3forms.com (enter your team's
+   email address there; the key is sent to that inbox and is safe to keep in this page).
+   Leave empty to disable sending (bookings are then only stored in the visitor's browser). */
+const WEB3FORMS_ACCESS_KEY = "";
+
+const MODERATORS = [
+  {
+    id: "elena", name: "Elena Marquez", initials: "EM", role: "Lead Moderator · Strategy & Scale",
+    bio: "Helps founders sharpen strategy and build businesses that scale with clarity.",
+    days: [1, 3, 5], hours: ["09:00", "10:00", "11:00", "14:00", "15:00"]
+  },
+  {
+    id: "daniel", name: "Daniel Hoffmann", initials: "DH", role: "Leadership & Accountability",
+    bio: "Guides leaders to set bold goals, follow through and lead high-trust teams.",
+    days: [1, 2, 4], hours: ["08:30", "10:00", "13:00", "16:00", "17:30"]
+  },
+  {
+    id: "amara", name: "Amara Okafor", initials: "AO", role: "Marketing & Growth",
+    bio: "Turns brand, positioning and growth challenges into practical action plans.",
+    days: [2, 3, 4], hours: ["10:00", "11:30", "14:00", "15:30", "18:00"]
+  },
+  {
+    id: "lukas", name: "Lukas Berger", initials: "LB", role: "Finance & Operations",
+    bio: "Brings structure to numbers, systems and operations so growth stays sustainable.",
+    days: [2, 5, 6], hours: ["09:00", "11:00", "13:30", "15:00"]
+  }
+];
+
+/* ==========================================================================
+   Timezone helpers (all calendar maths happens in Europe/Berlin wall time)
+   ========================================================================== */
+const pad = n => String(n).padStart(2, "0");
+const partsFmt = new Intl.DateTimeFormat("en-US", {
+  timeZone: TIMEZONE, hourCycle: "h23",
+  year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit"
+});
+function tzParts(date) {
+  const o = {};
+  for (const p of partsFmt.formatToParts(date)) if (p.type !== "literal") o[p.type] = +p.value;
+  return o;
+}
+function tzOffsetMin(date) {
+  const p = tzParts(date);
+  return (Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second) - Math.floor(date.getTime() / 1000) * 1000) / 60000;
+}
+/* Convert a CET wall-clock time to a real instant */
+function cetToDate(y, m, d, hh, mm) {
+  const guess = Date.UTC(y, m - 1, d, hh, mm);
+  let off = tzOffsetMin(new Date(guess));
+  let ts = guess - off * 60000;
+  const off2 = tzOffsetMin(new Date(ts));
+  if (off2 !== off) ts = guess - off2 * 60000;
+  return new Date(ts);
+}
+const tzAbbr = date => (tzOffsetMin(date) === 120 ? "CEST" : "CET");
+const dateKey = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+const isoWeekday = (y, m, d) => ((new Date(Date.UTC(y, m - 1, d)).getUTCDay() + 6) % 7) + 1;
+
+const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const sameTZ = (() => {
+  const now = new Date();
+  return new Date(now).toLocaleString("en-US", { timeZone: userTZ }) === now.toLocaleString("en-US", { timeZone: TIMEZONE });
+})();
+const fmtLocalTime = d => d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+const fmtCETTime = d => d.toLocaleTimeString("en-GB", { timeZone: TIMEZONE, hour: "2-digit", minute: "2-digit" });
+const fmtCETDate = d => d.toLocaleDateString("en-GB", { timeZone: TIMEZONE, weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+/* ==========================================================================
+   Storage (per-browser; wrapped so the page still works if storage is blocked)
+   ========================================================================== */
+const STORE_KEY = "mastermind-bookings-v1";
+function loadBookings() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; } catch { return []; }
+}
+function saveBookings(list) {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(list)); } catch { /* storage unavailable */ }
+}
+let bookings = loadBookings();
+const isBooked = (modId, startISO) => bookings.some(b => b.modId === modId && b.start === startISO);
+
+/* ==========================================================================
+   State
+   ========================================================================== */
+const nowParts = tzParts(new Date());
+const state = {
+  mod: "all",
+  viewY: nowParts.year, viewM: nowParts.month,
+  selDate: null,          // {y,m,d}
+  selSlot: null,          // {modId, start: Date}
+  lastBooking: null
+};
+const todayKey = dateKey(nowParts.year, nowParts.month, nowParts.day);
+const lastDay = (() => {
+  const t = new Date(Date.UTC(nowParts.year, nowParts.month - 1, nowParts.day + BOOKING_WINDOW_DAYS));
+  return { y: t.getUTCFullYear(), m: t.getUTCMonth() + 1, d: t.getUTCDate() };
+})();
+const lastKey = dateKey(lastDay.y, lastDay.m, lastDay.d);
+const modById = id => MODERATORS.find(m => m.id === id);
+const activeMods = () => state.mod === "all" ? MODERATORS : [modById(state.mod)];
+
+function slotsFor(y, m, d) {
+  const key = dateKey(y, m, d);
+  if (key < todayKey || key > lastKey) return [];
+  const wd = isoWeekday(y, m, d);
+  const minTime = Date.now() + MIN_NOTICE_HOURS * 3600000;
+  const out = [];
+  for (const mod of activeMods()) {
+    if (!mod.days.includes(wd)) continue;
+    for (const h of mod.hours) {
+      const [hh, mm] = h.split(":").map(Number);
+      const start = cetToDate(y, m, d, hh, mm);
+      if (start.getTime() < minTime) continue;
+      out.push({ mod, start, booked: isBooked(mod.id, start.toISOString()) });
+    }
+  }
+  return out;
+}
+
+/* ==========================================================================
+   Rendering
+   ========================================================================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const availText = mod => mod.days.map(d => DAY_NAMES[d - 1]).join(" · ") + ` · ${mod.hours[0]}–${mod.hours[mod.hours.length - 1]} CET`;
+
+function renderModCards() {
+  $("modCards").innerHTML = MODERATORS.map(m => `
+    <article class="glass mod reveal">
+      <div class="avatar">${esc(m.initials)}</div>
+      <h3>${esc(m.name)}</h3>
+      <div class="role">${esc(m.role)}</div>
+      <p>${esc(m.bio)}</p>
+      <div class="avail">${esc(availText(m))}</div>
+      <a href="#book" class="btn btn-ghost" data-pick="${m.id}">Book with ${esc(m.name.split(" ")[0])}</a>
+    </article>`).join("");
+  $("modCards").querySelectorAll("[data-pick]").forEach(a =>
+    a.addEventListener("click", () => selectMod(a.dataset.pick)));
+}
+
+function renderPicker() {
+  const chips = [`<button class="chip all" data-mod="all" aria-pressed="${state.mod === "all"}">All moderators</button>`]
+    .concat(MODERATORS.map(m =>
+      `<button class="chip" data-mod="${m.id}" aria-pressed="${state.mod === m.id}"><span class="mini">${esc(m.initials)}</span>${esc(m.name)}</button>`));
+  $("modPicker").innerHTML = chips.join("");
+  $("modPicker").querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => selectMod(c.dataset.mod)));
+}
+
+function selectMod(id) {
+  state.mod = id;
+  state.selSlot = null;
+  showFlow();
+  renderPicker();
+  renderCalendar();
+  if (state.selDate && !slotsFor(state.selDate.y, state.selDate.m, state.selDate.d).some(s => !s.booked)) state.selDate = null;
+  renderSlots();
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const { viewY: y, viewM: m } = state;
+  const monthName = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString("en-GB", { month: "long", year: "numeric", timeZone: "UTC" });
+  $("calTitle").textContent = monthName;
+  $("prevMonth").disabled = (y === nowParts.year && m === nowParts.month);
+  $("nextMonth").disabled = (y > lastDay.y || (y === lastDay.y && m >= lastDay.m));
+
+  const firstWd = isoWeekday(y, m, 1);
+  const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  let html = DAY_NAMES.map(d => `<div class="dow">${d}</div>`).join("");
+  for (let i = 1; i < firstWd; i++) html += `<div class="day empty"></div>`;
+  for (let d = 1; d <= days; d++) {
+    const key = dateKey(y, m, d);
+    const slots = slotsFor(y, m, d);
+    const free = slots.some(s => !s.booked);
+    const sel = state.selDate && dateKey(state.selDate.y, state.selDate.m, state.selDate.d) === key;
+    const cls = ["day", free ? "available" : (slots.length ? "full" : ""), key === todayKey ? "today" : ""].join(" ");
+    const label = new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+    html += `<button class="${cls}" data-d="${d}" ${free ? "" : "disabled"} aria-pressed="${!!sel}" aria-label="${label}${free ? ", available" : ", unavailable"}">${d}</button>`;
+  }
+  $("calGrid").innerHTML = html;
+  $("calGrid").querySelectorAll(".day.available").forEach(b => b.addEventListener("click", () => {
+    state.selDate = { y, m, d: +b.dataset.d };
+    state.selSlot = null;
+    renderCalendar(); renderSlots();
+  }));
+}
+
+function renderSlots() {
+  const groups = $("slotGroups");
+  hideForm();
+  if (!state.selDate) {
+    groups.innerHTML = "";
+    $("slotsPlaceholder").style.display = "";
+    $("slotsTitle").textContent = "Available times";
+    $("slotsSub").textContent = "Pick a date to see open slots";
+    return;
+  }
+  const { y, m, d } = state.selDate;
+  const slots = slotsFor(y, m, d);
+  $("slotsPlaceholder").style.display = "none";
+  const sample = cetToDate(y, m, d, 12, 0);
+  $("slotsTitle").textContent = fmtCETDate(sample);
+  $("slotsSub").textContent = `${SESSION_MINUTES}-minute sessions · times in ${tzAbbr(sample)}` + (sameTZ ? "" : ` · your local time shown below each slot`);
+
+  const byMod = new Map();
+  slots.forEach(s => { if (!byMod.has(s.mod.id)) byMod.set(s.mod.id, []); byMod.get(s.mod.id).push(s); });
+  groups.innerHTML = [...byMod.entries()].map(([id, list]) => {
+    const mod = modById(id);
+    return `<div class="slot-group">
+      <h4><span class="chip" style="padding:0;border:none;background:none"><span class="mini">${esc(mod.initials)}</span></span>${esc(mod.name)}</h4>
+      <div class="slot-list">${list.map(s => {
+        const iso = s.start.toISOString();
+        const sel = state.selSlot && state.selSlot.modId === id && state.selSlot.start.toISOString() === iso;
+        return `<button class="slot" data-mod="${id}" data-iso="${iso}" ${s.booked ? "disabled" : ""} aria-pressed="${!!sel}">
+          ${fmtCETTime(s.start)}${sameTZ ? "" : `<small>${fmtLocalTime(s.start)} local</small>`}
+        </button>`;
+      }).join("")}</div>
+    </div>`;
+  }).join("");
+  groups.querySelectorAll(".slot:not(:disabled)").forEach(b => b.addEventListener("click", () => {
+    state.selSlot = { modId: b.dataset.mod, start: new Date(b.dataset.iso) };
+    groups.querySelectorAll(".slot").forEach(x => x.setAttribute("aria-pressed", x === b));
+    showForm();
+  }));
+}
+
+function summaryHTML(modId, start) {
+  const mod = modById(modId);
+  const end = new Date(start.getTime() + SESSION_MINUTES * 60000);
+  const local = sameTZ ? "" : `<div><span>Your local time</span><strong>${start.toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</strong></div>`;
+  return `<div><span>Moderator</span><strong>${esc(mod.name)}</strong></div>
+    <div><span>Date</span><strong>${fmtCETDate(start)}</strong></div>
+    <div><span>Time (${tzAbbr(start)})</span><strong>${fmtCETTime(start)} – ${fmtCETTime(end)}</strong></div>${local}`;
+}
+
+function showForm() {
+  $("summary").innerHTML = summaryHTML(state.selSlot.modId, state.selSlot.start);
+  $("formWrap").classList.add("show");
+  setTimeout(() => $("formWrap").scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+}
+function hideForm() { $("formWrap").classList.remove("show"); }
+function showFlow() { $("bookingFlow").style.display = ""; $("confirm").classList.remove("show"); $("modPicker").style.display = ""; }
+
+function renderMyBookings() {
+  const upcoming = bookings.filter(b => new Date(b.start).getTime() > Date.now()).sort((a, b) => a.start.localeCompare(b.start));
+  $("myBookings").classList.toggle("show", upcoming.length > 0);
+  $("myBookingsList").innerHTML = upcoming.map(b => {
+    const s = new Date(b.start);
+    return `<div class="booking-row">
+      <div><strong>${esc(b.type)}</strong> with ${esc(modById(b.modId)?.name || b.modId)}
+        <div class="meta">${fmtCETDate(s)} · ${fmtCETTime(s)} ${tzAbbr(s)}</div></div>
+      <div style="display:flex;gap:16px">
+        <button class="link-btn" data-ics="${b.id}">.ics</button>
+        <button class="link-btn danger" data-cancel="${b.id}">Cancel</button>
+      </div>
+    </div>`;
+  }).join("");
+  $("myBookingsList").querySelectorAll("[data-cancel]").forEach(btn => btn.addEventListener("click", () => {
+    if (!confirm("Cancel this session?")) return;
+    bookings = bookings.filter(b => b.id !== btn.dataset.cancel);
+    saveBookings(bookings);
+    renderMyBookings(); renderCalendar(); if (state.selDate) renderSlots();
+    toast("Your session has been cancelled.");
+  }));
+  $("myBookingsList").querySelectorAll("[data-ics]").forEach(btn => btn.addEventListener("click", () =>
+    downloadICS(bookings.find(b => b.id === btn.dataset.ics))));
+}
+
+/* ==========================================================================
+   Calendar exports
+   ========================================================================== */
+const icsStamp = d => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+function eventDetails(b) {
+  const mod = modById(b.modId);
+  return {
+    title: `Mastermind Group · ${b.type} with ${mod.name}`,
+    start: new Date(b.start),
+    end: new Date(new Date(b.start).getTime() + SESSION_MINUTES * 60000),
+    desc: `${b.type} with ${mod.name} (${mod.role}).\nBooked by: ${b.name} <${b.email}>` + (b.notes ? `\nFocus: ${b.notes}` : "")
+  };
+}
+function gcalURL(b) {
+  const e = eventDetails(b);
+  const p = new URLSearchParams({ action: "TEMPLATE", text: e.title, dates: `${icsStamp(e.start)}/${icsStamp(e.end)}`, details: e.desc, ctz: TIMEZONE });
+  return `https://calendar.google.com/calendar/render?${p}`;
+}
+function downloadICS(b) {
+  const e = eventDetails(b);
+  const escI = s => s.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Mastermind Group//Booking//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+    "BEGIN:VEVENT", `UID:${b.id}@mastermind-group`, `DTSTAMP:${icsStamp(new Date())}`,
+    `DTSTART:${icsStamp(e.start)}`, `DTEND:${icsStamp(e.end)}`,
+    `SUMMARY:${escI(e.title)}`, `DESCRIPTION:${escI(e.desc)}`,
+    "BEGIN:VALARM", "TRIGGER:-PT30M", "ACTION:DISPLAY", "DESCRIPTION:Mastermind session reminder", "END:VALARM",
+    "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+  const a = Object.assign(document.createElement("a"), { href: url, download: "mastermind-session.ics" });
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/* ==========================================================================
+   Form
+   ========================================================================== */
+function setErr(id, msg) { document.querySelector(`.err[data-for="${id}"]`).textContent = msg || ""; }
+/* Email the booking to the team via Web3Forms. Resolves true on success. */
+async function sendBookingEmail(b) {
+  if (!WEB3FORMS_ACCESS_KEY) { console.warn("WEB3FORMS_ACCESS_KEY not set — booking email not sent."); return true; }
+  const mod = modById(b.modId);
+  const start = new Date(b.start);
+  const end = new Date(start.getTime() + SESSION_MINUTES * 60000);
+  const payload = {
+    access_key: WEB3FORMS_ACCESS_KEY,
+    subject: `New booking: ${b.type} with ${mod.name} — ${fmtCETDate(start)}, ${fmtCETTime(start)} ${tzAbbr(start)}`,
+    from_name: "Mastermind Group Booking",
+    replyto: b.email,
+    "Moderator": mod.name,
+    "Session type": b.type,
+    "Date": fmtCETDate(start),
+    "Time": `${fmtCETTime(start)} – ${fmtCETTime(end)} ${tzAbbr(start)}`,
+    "Name": b.name,
+    "Email": b.email,
+    "Company / Role": b.company || "—",
+    "Focus": b.notes || "—",
+    "Visitor timezone": userTZ,
+    "Add to Google Calendar": gcalURL(b),
+    botcheck: ""
+  };
+  try {
+    const res = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok && data.success !== false;
+  } catch {
+    return false;
+  }
+}
+
+$("bookForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const name = $("fName").value.trim(), email = $("fEmail").value.trim();
+  let ok = true;
+  setErr("fName"); setErr("fEmail");
+  if (name.length < 2) { setErr("fName", "Please enter your name."); ok = false; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr("fEmail", "Please enter a valid email."); ok = false; }
+  if (!ok || !state.selSlot) return;
+
+  const startISO = state.selSlot.start.toISOString();
+  if (isBooked(state.selSlot.modId, startISO)) { toast("Sorry, that slot was just taken. Please pick another."); renderSlots(); return; }
+
+  const booking = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())),
+    modId: state.selSlot.modId, start: startISO,
+    name, email, company: $("fCompany").value.trim(), type: $("fType").value, notes: $("fNotes").value.trim(),
+    createdAt: new Date().toISOString()
+  };
+
+  const submitBtn = $("bookForm").querySelector('[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Booking…";
+  const sent = await sendBookingEmail(booking);
+  submitBtn.disabled = false;
+  submitBtn.textContent = "Confirm Booking";
+  if (!sent) { toast("We couldn't send your booking. Please check your connection and try again."); return; }
+
+  bookings.push(booking);
+  saveBookings(bookings);
+
+  state.lastBooking = booking;
+  $("bookForm").reset();
+  $("confirmText").textContent = `Thank you, ${name.split(" ")[0]}! Your ${booking.type.toLowerCase()} is reserved. Your moderator will be in touch at ${email}.`;
+  $("confirmSummary").innerHTML = summaryHTML(booking.modId, new Date(booking.start));
+  $("gcalLink").href = gcalURL(booking);
+  $("bookingFlow").style.display = "none";
+  $("modPicker").style.display = "none";
+  $("confirm").classList.add("show");
+  $("bookingCard").scrollIntoView({ behavior: "smooth", block: "start" });
+  state.selSlot = null;
+  renderMyBookings();
+});
+$("cancelSel").addEventListener("click", () => { state.selSlot = null; renderSlots(); });
+$("icsBtn").addEventListener("click", () => state.lastBooking && downloadICS(state.lastBooking));
+$("bookAnother").addEventListener("click", () => { showFlow(); renderCalendar(); renderSlots(); });
+
+$("prevMonth").addEventListener("click", () => {
+  if (--state.viewM < 1) { state.viewM = 12; state.viewY--; }
+  renderCalendar();
+});
+$("nextMonth").addEventListener("click", () => {
+  if (++state.viewM > 12) { state.viewM = 1; state.viewY++; }
+  renderCalendar();
+});
+
+/* ==========================================================================
+   UI niceties
+   ========================================================================== */
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 3200);
+}
+
+const nav = $("nav");
+addEventListener("scroll", () => nav.classList.toggle("scrolled", scrollY > 20), { passive: true });
+$("menuBtn").addEventListener("click", () => {
+  const open = $("navLinks").classList.toggle("open");
+  $("menuBtn").setAttribute("aria-expanded", open);
+});
+$("navLinks").querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+  $("navLinks").classList.remove("open"); $("menuBtn").setAttribute("aria-expanded", false);
+}));
+
+function initReveal() {
+  const els = document.querySelectorAll(".reveal:not(.in)");
+  if (!("IntersectionObserver" in window)) { els.forEach(el => el.classList.add("in")); return; }
+  const io = new IntersectionObserver(entries => entries.forEach(en => {
+    if (en.isIntersecting) { en.target.classList.add("in"); io.unobserve(en.target); }
+  }), { threshold: 0.12 });
+  els.forEach(el => io.observe(el));
+}
+
+/* Twinkling starfield */
+(function stars() {
+  const c = $("stars"), ctx = c.getContext("2d");
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let pts = [], w, h, dpr;
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    w = c.width = innerWidth * dpr; h = c.height = innerHeight * dpr;
+    c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px";
+    const n = Math.round((innerWidth * innerHeight) / 5200);
+    pts = Array.from({ length: n }, () => ({
+      x: Math.random() * w, y: Math.random() * h, r: (Math.random() * 1.1 + 0.25) * dpr,
+      p: Math.random() * Math.PI * 2, s: 0.004 + Math.random() * 0.014, gold: Math.random() < 0.18
+    }));
+  }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    for (const s of pts) {
+      s.p += s.s;
+      const a = 0.35 + Math.sin(s.p) * 0.35 + 0.3;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = s.gold ? `rgba(246,215,124,${a})` : `rgba(220,232,255,${a})`;
+      ctx.fill();
+      if (s.r > 1.1 * dpr && a > 0.85) {
+        ctx.strokeStyle = s.gold ? `rgba(246,215,124,${(a - 0.85) * 2})` : `rgba(220,232,255,${(a - 0.85) * 2})`;
+        ctx.lineWidth = 0.6 * dpr; ctx.beginPath();
+        ctx.moveTo(s.x - s.r * 4, s.y); ctx.lineTo(s.x + s.r * 4, s.y);
+        ctx.moveTo(s.x, s.y - s.r * 4); ctx.lineTo(s.x, s.y + s.r * 4); ctx.stroke();
+      }
+    }
+    if (!reduce) requestAnimationFrame(draw);
+  }
+  addEventListener("resize", () => { resize(); if (reduce) draw(); });
+  resize(); draw();
+})();
+
+/* ==========================================================================
+   Init
+   ========================================================================== */
+$("year").textContent = new Date().getFullYear();
+$("tzLabel").textContent = `${tzAbbr(new Date())} (UTC${tzOffsetMin(new Date()) === 120 ? "+2" : "+1"})`;
+$("tzLocal").textContent = sameTZ ? "Your device is on Central European Time" : `Your local timezone: ${userTZ.replace(/_/g, " ")} — local times are shown under each slot`;
+renderModCards();
+renderPicker();
+renderCalendar();
+renderSlots();
+renderMyBookings();
+initReveal();
+</script>
+</body>
+</html>
